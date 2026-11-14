@@ -27,11 +27,33 @@ input[type=range]{width:100%}
 #msg{top:12px;right:56px;max-width:360px;display:none}
 #msg h3{margin:0 0 6px;font-size:14px}
 a{color:#1f6f8b}
+#fsBtn{position:absolute;top:12px;right:52px;z-index:5;background:#14323f;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:600;box-shadow:0 2px 8px #0004}
+#helpBtn{position:absolute;top:12px;right:150px;z-index:5;background:#fff;border:1px solid #d5dae1;border-radius:8px;padding:8px 12px;font-weight:600;box-shadow:0 2px 8px #0002}
+#help{position:absolute;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:10}
+#help .box{background:#fff;border-radius:14px;max-width:440px;padding:20px 22px;box-shadow:0 8px 30px #0005}
+#help h2{margin:0 0 10px;font-size:17px}#help ol{padding-left:20px;margin:0 0 12px}#help li{margin:6px 0}
+.views button{flex:1}
+details summary{cursor:pointer;color:#5d6678;font-size:12px;margin-top:8px}
+#status{background:#fff4dc;color:#7a4a00;border-radius:8px;padding:8px 10px;font-size:12px;margin-top:8px;display:none}
 .note{color:#5d6678;font-size:11px;margin-top:8px}
 </style>
 </head>
 <body>
 <div id="map"></div>
+<button id="fsBtn" title="Full screen (F)">⛶ Full screen</button>
+<button id="helpBtn" title="How to use">? How to use</button>
+<div id="help"><div class="box">
+ <h2>How to use the 3D simulation</h2>
+ <ol>
+  <li>Press <b>▶ Play</b> to start the traffic. Change <b>speed</b> to watch faster.</li>
+  <li>Switch <b>S0 Existing</b> ↔ <b>S4 Combined measures</b> to compare the queue at the USM gate.</li>
+  <li>Use the <b>view buttons</b> (Overview, Street level, Top-down), or drag to rotate, right-drag to tilt and scroll to zoom.</li>
+  <li>Drag the <b>time slider</b> to jump to any moment between 07:00 and 07:15.</li>
+  <li><b>⛶ Full screen</b> fills the screen; press Esc to leave.</li>
+ </ol>
+ <div class="note" style="margin:0 0 12px">Keyboard: <b>Space</b> play/pause · <b>F</b> full screen · <b>1/2/3</b> views</div>
+ <button class="primary" id="helpClose">Got it</button>
+</div></div>
 
 <div class="panel" id="ctl">
  <h1>3D SUMO simulation</h1>
@@ -41,10 +63,10 @@ a{color:#1f6f8b}
   <select id="base"><option value="standard">3D city</option><option value="standard-satellite">Satellite</option></select>
  </div>
  <div class="row">
-  <button class="primary" id="play">Play</button>
+  <button class="primary" id="play" style="font-size:14px;padding:7px 16px">▶ Play</button>
   <select id="speed"><option>1</option><option>2</option><option selected>5</option><option>10</option><option>20</option></select><span>× speed</span>
-  <button id="cam">Reset view</button>
  </div>
+ <div class="row views"><button id="v1">Overview</button><button id="v2">Street level</button><button id="v3">Top-down</button></div>
  <div class="row"><span class="clock" id="clock">07:00:00</span><span style="margin-left:auto"><span id="sig"></span><span id="sigTxt">Crossing clear</span></span></div>
  <input type="range" id="slider" min="0" max="899" value="0" step="1">
  <div class="stats">
@@ -54,7 +76,9 @@ a{color:#1f6f8b}
   <div class="stat"><b id="nout">0</b><span>reached USM gate</span></div>
  </div>
  <div class="leg" id="leg"></div>
- <div class="row" style="margin-top:10px"><button id="pick">Set corridor points</button><a id="dash" href="index.html">Dashboard</a></div>
+ <div id="status"></div>
+ <div class="row" style="margin-top:8px"><a id="dash" href="index.html">← Back to dashboard</a></div>
+ <details><summary>Advanced</summary><div class="row"><button id="pick">Re-draw corridor points</button></div></details>
  <div class="note">Vehicle trajectories are SUMO output (one seed) for the 07:00–07:15 interval, drawn along the measured corridor. Vehicle sizes are to scale; heights are indicative.</div>
 </div>
 
@@ -155,7 +179,8 @@ async function loadReplay(sid){if(data[sid])return data[sid];
 
 let cfgGeom=null;
 async function useScenario(sid){const d=await loadReplay(sid);
- if(!d){if(corr&&cfgGeom&&!geo){geo=buildGeo(corr,cfgGeom);addLayers();camera()}showMsg('<h3>No simulation output yet</h3>Run <code>RUN_REPLAY.bat</code> (or <code>python run_bmp.py --replay</code>) and add the <code>replay/</code> folder to the repository.');return}
+ if(!d){if(corr&&cfgGeom&&!geo){geo=buildGeo(corr,cfgGeom);addLayers();camera()}const st=$('status');st.style.display='block';st.innerHTML='<b>Vehicles not available yet.</b> The simulation output for this scenario has not been uploaded. The corridor and buildings are shown; traffic will appear here once it is added.';$('play').disabled=true;return}
+ $('status').style.display='none';$('play').disabled=false;
  cur=d;{const [h,m]=d.window.split(':').map(Number),e=h*60+m+15;$('win').textContent=`${d.window}–${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`}
  if(corr&&!geo){geo=buildGeo(corr,d.geom);camera()}
  if(geo){showMsg('');addLayers()}}
@@ -186,11 +211,24 @@ function initMap(){
   if(geo){addLayers();camera()}});
 }
 
-$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'Pause':'Play'};
+const setPlay=v=>{playing=v;$('play').textContent=playing?'❚❚ Pause':'▶ Play'};
+$('play').onclick=()=>setPlay(!playing);
+function view(k){if(!geo)return;const q=geo,d=sub(q.G,q.pts[0]),br=Math.atan2(d[0],d[1])*180/Math.PI;
+ if(k===1)camera();
+ if(k===2){const p=toLL(atS(q.total*0.82).P,q.o);map.flyTo({center:p,zoom:19.3,pitch:76,bearing:br,duration:2000})}
+ if(k===3){const p=toLL(atS(q.total*0.5).P,q.o);map.flyTo({center:p,zoom:16.6,pitch:0,bearing:br,duration:2000})}}
+$('v1').onclick=()=>view(1);$('v2').onclick=()=>view(2);$('v3').onclick=()=>view(3);
+function toggleFS(){const el=document.documentElement;if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen).call(el).catch?.(()=>{})}else document.exitFullscreen()}
+$('fsBtn').onclick=toggleFS;
+document.addEventListener('fullscreenchange',()=>{$('fsBtn').textContent=document.fullscreenElement?'✕ Exit full screen':'⛶ Full screen';setTimeout(()=>map&&map.resize(),200)});
+const showHelp=v=>$('help').style.display=v?'flex':'none';
+$('helpBtn').onclick=()=>showHelp(true);$('helpClose').onclick=()=>{showHelp(false);try{localStorage.setItem('bmp_help_seen','1')}catch(e){}};
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+ if(e.code==='Space'){e.preventDefault();setPlay(!playing)}else if(e.key==='f'||e.key==='F')toggleFS();else if(['1','2','3'].includes(e.key))view(+e.key)});
+try{if(!localStorage.getItem('bmp_help_seen'))showHelp(true)}catch(e){showHelp(true)}
 $('slider').oninput=e=>{t=+e.target.value;render()};
 $('scen').onchange=e=>useScenario(e.target.value);
 $('base').onchange=e=>map.setStyle('mapbox://styles/mapbox/'+e.target.value);
-$('cam').onclick=camera;
 $('pick').onclick=()=>{picking=0;picked={};map.getCanvas().style.cursor='crosshair';showMsg('<h3>Set corridor points</h3>Click the <b>entry point</b> on the map.')};
 $('leg').innerHTML=Object.keys(COLORS).map(k=>`<span><span class="sw" style="background:${COLORS[k]}"></span>${LABELS[k]}</span>`).join('')+'<span><span class="sw" style="background:#7a3fa0"></span>Pedestrian</span>';
 if(window.mapboxgl){initMap();requestAnimationFrame(loop)}else showMsg('<h3>Map unavailable</h3>Mapbox GL could not load.');

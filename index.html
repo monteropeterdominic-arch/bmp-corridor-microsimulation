@@ -61,8 +61,8 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
   <div class="grid g4" id="kpis"></div>
   <div class="card" style="margin-top:14px;padding:10px">
    <div class="row" style="margin:0 4px 8px"><div><h3>3D SUMO simulation of USM Avenue</h3><div class="sub" style="margin:0">Simulated vehicles replayed on the real corridor (07:00–07:15). Drag to rotate, scroll to zoom.</div></div>
-    <a href="simulation3d.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;white-space:nowrap">Full screen ↗</a></div>
-   <iframe src="simulation3d.html?embed=1" title="3D SUMO simulation" style="width:100%;height:620px;border:0;border-radius:8px;display:block" allow="fullscreen"></iframe>
+    <div style="display:flex;gap:8px"><button id="sim3dFS" style="background:#14323f;color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer">⛶ Full screen</button><a href="simulation3d.html" target="_blank" rel="noopener" style="border:1px solid var(--line);border-radius:8px;padding:7px 12px;color:var(--accent);font-weight:600;text-decoration:none;white-space:nowrap">Open in new tab ↗</a></div></div>
+   <iframe id="sim3d" src="simulation3d.html?embed=1" title="3D SUMO simulation" style="width:100%;height:620px;border:0;border-radius:8px;display:block" allow="fullscreen"></iframe>
   </div>
   <div class="grid g2" style="margin-top:14px">
    <div class="card"><h3>Corridor layout</h3><div class="sub">Click an observation point to see its counts for the selected peak</div>
@@ -274,6 +274,7 @@ function initMap(){
  });
  document.getElementById('setPts').onclick=()=>{picking=0;picked={};drawCorridor({},false);map.getCanvas().style.cursor='crosshair';document.getElementById('mapSub').textContent='Click the Entry point on the map'};
 }
+document.getElementById('sim3dFS').onclick=()=>{const f=document.getElementById('sim3d');(f.requestFullscreen||f.webkitRequestFullscreen).call(f)};
 // When served from GitHub Pages (or any web server) load the bundled results automatically.
 fetch('results/results.json').then(r=>r.ok?r.json():null).then(j=>{if(j){loadSim(j);alert0('Showing results/results.json from this repository. Drop another file to replace it.')}}).catch(()=>{});
 </script>
