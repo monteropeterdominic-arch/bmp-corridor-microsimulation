@@ -1,16 +1,16 @@
 scenario,label,period,travel_time_s,travel_time_s_sd,time_loss_s,time_loss_s_sd,waiting_s,waiting_s_sd,mid_speed_kph,mid_speed_kph_sd,max_halting,max_halting_sd,co2_kg,co2_kg_sd,gate_total,gate_total_sd,travel_time_s_chg_pct,time_loss_s_chg_pct,co2_kg_chg_pct
-S0_baseline,Existing conditions,morning,76.37,3.98,12.82,4.13,2.67,1.97,19.52,1.08,35.2,18.14,129.99,6.23,1298.4,7.13,0.0,0.0,0.0
-S0_baseline,Existing conditions,midday,71.59,1.33,8.08,1.25,0.93,0.39,20.66,0.49,16.4,8.68,105.07,4.18,1247.6,1.82,0.0,0.0,0.0
-S0_baseline,Existing conditions,evening,63.45,0.56,3.06,0.1,0.24,0.06,24.88,0.2,4.2,0.45,46.15,0.46,614,3.61,0.0,0.0,0.0
-S1_tricycle_bay,Tricycle loading bay,morning,73.15,2.54,9.17,2.01,1.82,0.85,21.17,0.73,25.2,8.26,121.84,4.94,1305,5.79,-4.2,-28.5,-6.3
-S1_tricycle_bay,Tricycle loading bay,midday,70.47,0.7,6.9,0.39,0.88,0.04,21.64,0.24,12.4,1.82,100.57,1.19,1240.6,8.38,-1.6,-14.6,-4.3
-S1_tricycle_bay,Tricycle loading bay,evening,63.37,0.45,3.04,0.07,0.23,0.07,25.22,0.21,4.4,1.14,45.64,0.3,613.6,3.44,-0.1,-0.7,-1.1
-S2_no_parking,No-parking enforcement,morning,70.95,0.6,7.27,0.47,1.03,0.16,22.23,0.2,18.4,3.21,113.76,2.25,1298,15.94,-7.1,-43.3,-12.5
-S2_no_parking,No-parking enforcement,midday,69.25,0.36,5.72,0.15,0.53,0.09,22.89,0.11,10.6,2.88,94.75,1.54,1240.4,6.23,-3.3,-29.2,-9.8
-S2_no_parking,No-parking enforcement,evening,63.33,0.51,3.0,0.12,0.19,0.03,25.69,0.24,4.2,0.84,45.07,0.68,614.6,2.3,-0.2,-2.0,-2.3
-S3_ctrl_crossing,Controlled pedestrian crossing,morning,76.56,2.43,12.96,2.51,2.79,1.27,19.64,0.39,33,4.95,130.0,4.85,1299.2,12.85,0.2,1.1,0.0
-S3_ctrl_crossing,Controlled pedestrian crossing,midday,73.84,5.56,10.35,5.65,2.38,3.08,20.26,1.06,28.6,31.67,108.45,10.28,1245,4.74,3.1,28.1,3.2
-S3_ctrl_crossing,Controlled pedestrian crossing,evening,64.32,0.55,3.95,0.29,0.66,0.14,24.38,0.24,5.2,0.45,46.84,0.56,615.4,7.64,1.4,29.1,1.5
-S4_combined,Combined (S1+S2+S3),morning,68.69,0.46,4.9,0.07,0.75,0.05,24.18,0.12,16.4,2.07,107.3,1.93,1304.2,5.36,-10.1,-61.8,-17.5
-S4_combined,Combined (S1+S2+S3),midday,68.66,0.46,5.06,0.12,0.68,0.03,23.71,0.15,11.6,1.82,91.9,2.78,1247.6,4.22,-4.1,-37.4,-12.5
-S4_combined,Combined (S1+S2+S3),evening,63.84,0.53,3.57,0.17,0.64,0.12,25.57,0.25,5.4,0.55,45.61,0.36,613.4,5.03,0.6,16.7,-1.2
+S0_baseline,Existing conditions,morning,78.94,0.59,9.79,0.81,1.57,0.57,27.84,0.31,29.2,8.47,145.91,2.61,1295,4.69,0.0,0.0,0.0
+S0_baseline,Existing conditions,midday,76.0,0.74,6.83,0.51,0.55,0.07,28.79,0.33,13.2,3.7,119.47,2.63,1247,2.12,0.0,0.0,0.0
+S0_baseline,Existing conditions,evening,68.48,0.5,2.7,0.09,0.18,0.04,33.64,0.18,5,0.71,55.77,0.91,615,4.24,0.0,0.0,0.0
+S1_tricycle_bay,Tricycle loading bay,morning,77.43,1.71,7.98,1.4,1.2,0.58,29.31,0.68,22,4.18,139.36,2.4,1292.6,10.48,-1.9,-18.5,-4.5
+S1_tricycle_bay,Tricycle loading bay,midday,75.36,0.5,6.16,0.28,0.63,0.1,29.76,0.24,11,2.92,116.66,1.52,1241,10.2,-0.8,-9.8,-2.4
+S1_tricycle_bay,Tricycle loading bay,evening,68.42,0.44,2.71,0.15,0.19,0.05,34.03,0.26,4.6,0.55,55.04,0.56,614.8,2.49,-0.1,0.4,-1.3
+S2_no_parking,No-parking enforcement,morning,76.02,0.44,6.74,0.36,0.79,0.09,30.43,0.17,19.6,3.71,132.36,1.44,1296.2,20.41,-3.7,-31.2,-9.3
+S2_no_parking,No-parking enforcement,midday,74.72,0.29,5.54,0.21,0.51,0.08,31.03,0.1,10.2,2.59,111.67,2.47,1238.4,6.84,-1.7,-18.9,-6.5
+S2_no_parking,No-parking enforcement,evening,68.36,0.5,2.64,0.06,0.17,0.02,34.59,0.28,4.8,1.1,54.48,0.69,615.4,2.7,-0.2,-2.2,-2.3
+S3_ctrl_crossing,Controlled pedestrian crossing,morning,79.19,1.75,10.0,1.51,1.47,0.54,27.74,0.65,27,10.15,144.71,3.44,1292,18.55,0.3,2.1,-0.8
+S3_ctrl_crossing,Controlled pedestrian crossing,midday,76.59,0.73,7.44,0.41,0.94,0.17,28.53,0.29,16,3.39,120.98,0.64,1243.8,3.96,0.8,8.9,1.3
+S3_ctrl_crossing,Controlled pedestrian crossing,evening,69.39,0.53,3.63,0.19,0.64,0.09,33.09,0.27,6,1.41,56.41,0.62,616.2,8.81,1.3,34.4,1.1
+S4_combined,Combined (S1+S2+S3),morning,74.07,0.53,4.69,0.27,0.69,0.08,32.59,0.23,15.6,2.07,126.2,0.97,1292.4,6.5,-6.2,-52.1,-13.5
+S4_combined,Combined (S1+S2+S3),midday,74.19,0.55,4.93,0.16,0.65,0.06,31.96,0.25,10.6,2.07,108.73,3.13,1246.6,4.45,-2.4,-27.8,-9.0
+S4_combined,Combined (S1+S2+S3),evening,69.15,0.43,3.5,0.34,0.68,0.17,34.28,0.28,6.6,1.52,55.66,1.08,613.2,6.06,1.0,29.6,-0.2
