@@ -94,7 +94,7 @@ The **Field observations** tab opens with the 3D SUMO simulation of USM Avenue, 
 
 ## Authors
 
-Peter Dominic C. Montero, Keith Ternura, Lesly A. Bocado, John Paul Esparagoza, Samrah Angeles, Rachelle Anne Barbecho, Jeko Jann G. Heyres, Carl Jay G. Ostaga, Jovan A. Prudente, Alexa Mae Serjas, Khent Brylle L. Yson (BSCE, Highway & Railway Engineering), and Ebrahim A. Omar (Faculty of Civil Engineering), University of Southern Mindanao, Kabacan, Cotabato.
+Peter Dominic C. Montero, Keith Ternura, Lesly A. Bocado, John Paul Esparagoza, Alexa Mae Serjas, Jovan A. Prudente, Carl Jay G. Ostaga, Jeko Jann G. Heyres, Samrah Angeles, Khent Brylle L. Yson, Rachelle Anne Barbecho (BSCE, Highway & Railway Engineering), and Ebrahim A. Omar (Faculty of Civil Engineering), University of Southern Mindanao, Kabacan, Cotabato.
 
 ## License
 
