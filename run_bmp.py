@@ -325,9 +325,17 @@ def net_offset(net):
     return ox, oy
 
 
+REPLAY_INTERVALS = {"morning": 2, "midday": 3, "evening": 1}   # busiest 15 min of each peak (highest gate arrivals)
+
+
+def export_replays(cfg, field, nlinks):
+    for period, interval in REPLAY_INTERVALS.items():
+        export_replay(cfg, field, nlinks, period=period, interval=interval)
+
+
 def export_replay(cfg, field, nlinks, scen_ids=("S0_baseline", "S4_combined"), period="morning", interval=2):
     """Run one seed of each scenario with floating-car-data output and write the vehicle
-    trajectories of one 15-min interval (default: 07:00-07:15, the most congested) to replay/."""
+    trajectories of one 15-min interval to replay/."""
     sim, g = cfg["simulation"], cfg["geometry"]
     seed, warm = sim["seeds"][0], sim["warmup_s"]
     t0 = warm + interval * 900
@@ -395,7 +403,7 @@ def main():
     if a.replay:
         if a.dry_run:
             sys.exit("--replay needs SUMO; run it without --dry-run")
-        export_replay(cfg, field, nlinks)
+        export_replays(cfg, field, nlinks)
         return
 
     if a.gui:

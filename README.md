@@ -86,9 +86,9 @@ The **Field observations** tab opens with the 3D SUMO simulation of USM Avenue, 
 
 ## 3D simulation
 
-`simulation3d.html` replays SUMO vehicle trajectories in 3D on a Mapbox map with 3D buildings: cars, motorcycles, tricycles, jeepneys and trucks move along the real corridor, and pedestrians appear at the USM gate whenever they hold up traffic. It compares existing conditions (S0) with the combined measures (S4) for the 07:00–07:15 morning interval.
+`simulation3d.html` replays SUMO vehicle trajectories in 3D on a Mapbox map with 3D buildings: cars, motorcycles, tricycles, jeepneys and trucks move along the real corridor, and pedestrians appear at the USM gate whenever they hold up traffic. It compares existing conditions (S0) with the combined measures (S4) for the busiest 15 minutes of each peak: morning 07:00–07:15, midday 12:00–12:15 and evening 19:45–20:00.
 
-1. Run `python run_bmp.py --replay` (or double-click `RUN_REPLAY.bat`). This writes `replay/replay_S0_baseline_morning.json` and `replay/replay_S4_combined_morning.json`.
+1. Run `python run_bmp.py --replay` (or double-click `RUN_REPLAY.bat`). This writes `replay/replay_<scenario>_<period>.json` for S0 and S4 and all three peaks.
 2. Add the `replay/` folder to the repository. The corridor geometry comes from `corridor.json` (USM Avenue, OpenStreetMap way 4302974).
 3. Open `https://monteropeterdominic-arch.github.io/bmp-corridor-microsimulation/simulation3d.html`.
 

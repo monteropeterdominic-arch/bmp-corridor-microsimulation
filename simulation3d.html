@@ -47,6 +47,7 @@ details summary{cursor:pointer;color:#5d6678;font-size:12px;margin-top:8px}
  <ol>
   <li>The traffic starts playing by itself. Use <b>❚❚ Pause / ▶ Play</b> to stop and restart it, and <b>speed</b> to watch faster.</li>
   <li>USM Avenue is one-way with <b>two lanes in the same direction</b> (dashed line), from the Davao–Cotabato Road to the USM gate.</li>
+  <li>Choose the <b>Morning, Midday or Evening peak</b> (each shows its busiest 15 minutes).</li>
   <li>Switch <b>S0 Existing</b> ↔ <b>S4 Combined measures</b> to compare the queue at the USM gate.</li>
   <li>Use the <b>view buttons</b> (Overview, Street level, Top-down), or drag to rotate, right-drag to tilt and scroll to zoom.</li>
   <li>Drag the <b>time slider</b> to jump to any moment between 07:00 and 07:15.</li>
@@ -58,8 +59,9 @@ details summary{cursor:pointer;color:#5d6678;font-size:12px;margin-top:8px}
 
 <div class="panel" id="ctl">
  <h1>3D SUMO simulation</h1>
- <div class="sub">Bai Matabay Plang Avenue · morning peak, <span id="win">07:00–07:15</span></div>
+ <div class="sub">Bai Matabay Plang Avenue · <span id="pername">morning peak</span>, <span id="win">07:00–07:15</span></div>
  <div class="row">
+  <select id="per"><option value="morning">Morning peak</option><option value="midday">Midday peak</option><option value="evening">Evening peak</option></select>
   <select id="scen"><option value="S0_baseline">S0 Existing conditions</option><option value="S4_combined">S4 Combined measures</option></select>
   <select id="base"><option value="standard">3D city</option><option value="standard-satellite">Satellite</option></select>
  </div>
@@ -161,6 +163,7 @@ function addLabels(){labels.forEach(m=>m.remove());labels=[];if(!geo)return;
  mk(toLL(atS(geo.total*0.55).P,geo.o),'USM Avenue · study corridor','background:#ffd400;color:#14323f;font-size:13px');
  mk(toLL(geo.pts[0],geo.o),'Davao–Cotabato Road (entry)');
  if(geo.side)mk(toLL(geo.side.pts[Math.min(1,geo.side.pts.length-1)],geo.o),geo.side.name+' (side-street inflow)','background:#ff9f43;color:#14323f');mk(toLL(geo.G,geo.o),'USM gate')}
+function safeAdd(){try{addLayers();return true}catch(e){setTimeout(safeAdd,500);return false}}
 function addLayers(){if(!geo)return;
  const r=roadFeatures();
  const srcs={side:{type:'FeatureCollection',features:geo.side?[r.sideF]:[]},surf:{type:'FeatureCollection',features:[r.surf]},lane:{type:'FeatureCollection',features:[r.laneF]},hl:{type:'FeatureCollection',features:[r.line]},road:{type:'FeatureCollection',features:[r.line]},zone:{type:'FeatureCollection',features:[r.zl]},veh:{type:'FeatureCollection',features:[]},xing:{type:'FeatureCollection',features:[]}};
@@ -192,16 +195,16 @@ function loop(ts){if(playing){if(last!=null){t+=(ts-last)/1000*(+$('speed').valu
 
 function showMsg(html){const m=$('msg');m.innerHTML=html;m.style.display=html?'block':'none'}
 
-async function loadReplay(sid){if(data[sid])return data[sid];
- try{const r=await fetch(`replay/replay_${sid}_morning.json`);if(!r.ok)throw 0;data[sid]=await r.json();return data[sid]}catch(e){return null}}
+async function loadReplay(sid){const key=sid+'_'+$('per').value;if(data[key])return data[key];
+ try{const r=await fetch(`replay/replay_${key}.json`);if(!r.ok)throw 0;data[key]=await r.json();return data[key]}catch(e){return null}}
 
 let cfgGeom=null;
 async function useScenario(sid){const d=await loadReplay(sid);
- if(!d){if(corr&&cfgGeom&&!geo){geo=buildGeo(corr,cfgGeom);addLayers();camera()}const st=$('status');st.style.display='block';st.innerHTML='<b>Vehicles not available yet.</b> The simulation output for this scenario has not been uploaded. The corridor and buildings are shown; traffic will appear here once it is added.';$('play').disabled=true;return}
+ if(!d){if(corr&&cfgGeom&&!geo){geo=buildGeo(corr,cfgGeom);safeAdd();camera()}const st=$('status');st.style.display='block';st.innerHTML='<b>Vehicles not available yet.</b> The simulation output for this scenario has not been uploaded. The corridor and buildings are shown; traffic will appear here once it is added.';$('play').disabled=true;return}
  $('status').style.display='none';$('play').disabled=false;if(!autoStarted){autoStarted=true;setPlay(true)}
- cur=d;{const [h,m]=d.window.split(':').map(Number),e=h*60+m+15;$('win').textContent=`${d.window}–${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`}
+ cur=d;$('pername').textContent=$('per').selectedOptions[0].text.toLowerCase();{const [h,m]=d.window.split(':').map(Number),e=h*60+m+15;$('win').textContent=`${d.window}–${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`}
  if(corr&&!geo){geo=buildGeo(corr,d.geom);camera()}
- if(geo){showMsg('');addLayers()}}
+ if(geo){showMsg('');safeAdd()}}
 
 
 
@@ -210,14 +213,14 @@ function initMap(){
  map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/standard',center:[124.8298,7.1092],zoom:16,pitch:55,antialias:true});
  map.addControl(new mapboxgl.NavigationControl({visualizePitch:true}),'top-right');
  map.addControl(new mapboxgl.ScaleControl({unit:'metric'}),'bottom-right');
- map.on('style.load',()=>{try{map.setConfigProperty('basemap','lightPreset','day');map.setConfigProperty('basemap','show3dObjects',true)}catch(e){}addLayers()});
+ map.on('style.load',()=>{try{map.setConfigProperty('basemap','lightPreset','day');map.setConfigProperty('basemap','show3dObjects',true)}catch(e){}safeAdd()});
  const boot=async()=>{
   let c=null;try{const r=await fetch('corridor.json');if(r.ok)c=await r.json()}catch(e){}
   if(c&&c.entry&&c.mid&&c.gate)corr=c;
   try{const r=await fetch('config.json');if(r.ok){const g=(await r.json()).geometry;cfgGeom={Le:g.entry_segment_length_m,Lm:g.mid_segment_length_m,lanes:g.lanes,laneW:g.lane_width_m,exit:60}}}catch(e){}
   await useScenario($('scen').value);
   };
- let booted=false;const tryBoot=()=>{if(booted)return;if(map.isStyleLoaded()||(map.style&&map.style._loaded)){booted=true;try{map.setConfigProperty('basemap','lightPreset','day')}catch(e){}addLayers();boot()}else setTimeout(tryBoot,400)};
+ let booted=false;const tryBoot=()=>{if(booted)return;if(map.isStyleLoaded()||(map.style&&map.style._loaded)){booted=true;try{map.setConfigProperty('basemap','lightPreset','day')}catch(e){}safeAdd();boot()}else setTimeout(tryBoot,400)};
  map.on('style.load',tryBoot);tryBoot();
 
 }
@@ -239,6 +242,7 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.
 
 $('slider').oninput=e=>{t=+e.target.value;render()};
 $('scen').onchange=e=>useScenario(e.target.value);
+$('per').onchange=()=>{t=0;useScenario($('scen').value)};
 $('base').onchange=e=>map.setStyle('mapbox://styles/mapbox/'+e.target.value);
 $('leg').innerHTML=Object.keys(COLORS).map(k=>`<span><span class="sw" style="background:${COLORS[k]}"></span>${LABELS[k]}</span>`).join('')+'<span><span class="sw" style="background:#7a3fa0"></span>Pedestrian</span>';
 if(window.mapboxgl){initMap();requestAnimationFrame(loop)}else showMsg('<h3>Map unavailable</h3>Mapbox GL could not load.');
