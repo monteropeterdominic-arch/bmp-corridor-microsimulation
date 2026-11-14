@@ -13,6 +13,7 @@ Usage (from this folder):
     python run_bmp.py                 # build + run everything
     python run_bmp.py --dry-run       # only generate SUMO input files
     python run_bmp.py --gui S0_baseline morning   # open one case in sumo-gui
+    python run_bmp.py --replay        # export vehicle trajectories for the 3D web simulation
 
 Requirements: Python 3.8+, Eclipse SUMO >= 1.15 (https://eclipse.dev/sumo/).
 Set SUMO_HOME or put sumo/netconvert on PATH. matplotlib is optional (figures).
@@ -312,16 +313,86 @@ def geh(m, c):
     return math.sqrt(2 * (m - c) ** 2 / (m + c)) if (m + c) else 0.0
 
 
+
+# --------------------------------------------------------------------------- 3D replay export
+def net_offset(net):
+    loc = ET.parse(net).getroot().find("location")
+    ox, oy = (float(v) for v in loc.get("netOffset", "0,0").split(","))
+    return ox, oy
+
+
+def export_replay(cfg, field, nlinks, scen_ids=("S0_baseline", "S4_combined"), period="morning", interval=2):
+    """Run one seed of each scenario with floating-car-data output and write the vehicle
+    trajectories of one 15-min interval (default: 07:00-07:15, the most congested) to replay/."""
+    sim, g = cfg["simulation"], cfg["geometry"]
+    seed, warm = sim["seeds"][0], sim["warmup_s"]
+    t0 = warm + interval * 900
+    t1 = t0 + 900
+    ox, oy = net_offset(os.path.join(BUILD, "bmp.net.xml"))
+    out_dir = ensure(os.path.join(HERE, "replay"))
+    for sid in scen_ids:
+        case, _ = build_case(cfg, field, sid, period, seed, nlinks)
+        cmd = sumo_cmd(cfg, case, t1, seed) + ["--fcd-output", "fcd.xml"]
+        print(f"replay {sid} {period}", flush=True)
+        subprocess.run(cmd, cwd=case, check=True, stdout=subprocess.DEVNULL)
+        tracks, order = {}, []
+        for _, ts in ET.iterparse(os.path.join(case, "fcd.xml")):
+            if ts.tag != "timestep":
+                continue
+            t = float(ts.get("time"))
+            if t0 <= t < t1 and abs(t - round(t)) < 1e-6:
+                k = int(round(t - t0))
+                for v in ts.iter("vehicle"):
+                    vid = v.get("id")
+                    tr = tracks.get(vid)
+                    if tr is None or tr["start"] + len(tr["x"]) != k:      # new vehicle (or after a gap)
+                        if tr is not None:
+                            vid = vid + "_" + str(k)
+                        tr = tracks[vid] = {"type": CLASSES.index(v.get("type")) if v.get("type") in CLASSES else 0,
+                                            "start": k, "x": [], "y": [], "v": []}
+                        order.append(vid)
+                    tr["x"].append(round(float(v.get("x")) - ox, 1))
+                    tr["y"].append(round(float(v.get("y")) - oy, 2))
+                    tr["v"].append(round(float(v.get("speed")) * 3.6, 1))
+            ts.clear()
+        # pedestrian signal (red intervals) inside the window
+        red, t = [], 0.0
+        for ph in ET.parse(os.path.join(case, "add.xml")).getroot().iter("phase"):
+            dur = float(ph.get("duration"))
+            if ph.get("state", "G")[0] == "r" and t + dur > t0 and t < t1:
+                red.append([round(max(t, t0) - t0, 1), round(min(t + dur, t1) - t0, 1)])
+            t += dur
+        data = {
+            "scenario": sid, "label": cfg["scenarios"][sid]["label"], "period": period,
+            "window": field["periods"][period]["intervals"][interval], "duration": 900, "seed": seed,
+            "geom": {"Le": g["entry_segment_length_m"], "Lm": g["mid_segment_length_m"], "exit": 60,
+                     "lanes": g["lanes"], "laneW": g["lane_width_m"]},
+            "types": CLASSES, "vtype_dims": {c: [float(VTYPES[c]["length"]), float(VTYPES[c]["width"])] for c in CLASSES},
+            "ped_red": red,
+            "veh": [[tracks[i]["type"], tracks[i]["start"], tracks[i]["x"], tracks[i]["y"], tracks[i]["v"]] for i in order],
+        }
+        path = os.path.join(out_dir, f"replay_{sid}_{period}.json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, separators=(",", ":"))
+        print(f"  wrote {path} ({len(order)} vehicles)")
+
 # --------------------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--gui", nargs=2, metavar=("SCENARIO", "PERIOD"))
+    ap.add_argument("--replay", action="store_true", help="export trajectories for the 3D web simulation")
     a = ap.parse_args()
     cfg, field = load_json("config.json"), load_json("field_data.json")
 
     net = build_network(cfg, a.dry_run)
     nlinks = tls_link_count(net, int(cfg["geometry"]["lanes"]))
+
+    if a.replay:
+        if a.dry_run:
+            sys.exit("--replay needs SUMO; run it without --dry-run")
+        export_replay(cfg, field, nlinks)
+        return
 
     if a.gui:
         case, hz = build_case(cfg, field, a.gui[0], a.gui[1], cfg["simulation"]["seeds"][0], nlinks)
