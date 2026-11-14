@@ -1,6 +1,6 @@
 # Bai Matabay Plang Avenue corridor microsimulation
 
-Field data, a calibrated SUMO microsimulation, and a web dashboard for the study of friction-driven congestion on Bai Matabay Plang Avenue, the one-way access road between the Davao–Cotabato National Highway and the University of Southern Mindanao (USM) main gate in Kabacan, Cotabato, Philippines.
+Field data, a calibrated SUMO microsimulation, and a web dashboard for a study of friction-driven congestion on Bai Matabay Plang Avenue, the one-way access road between the Davao–Cotabato National Highway and the University of Southern Mindanao (USM) main gate in Kabacan, Cotabato, Philippines.
 
 ![SUMO representation of the corridor](docs/fig_sumo_network.png)
 
@@ -62,7 +62,7 @@ Open the **SUMO scenarios** tab and load `results/results.json` to display the s
 
 ## Authors
 
-Rachelle Anne Barbecho, Lesly A. Bocado, John Paul Esparagoza, Jeko Jann G. Heyres, Peter Dominic C. Montero, Carl Jay G. Ostaga, Jovan A. Prudente, Samrah Angeles, Alexa Mae Serjas, Keith Ternura, Khent Brylle L. Yson (BSCE, Highway & Railway Engineering), and Ebrahim A. Omar (Faculty of Civil Engineering), University of Southern Mindanao, Kabacan, Cotabato.
+Peter Dominic C. Montero, Keith Ternura, Lesly A. Bocado, John Paul Esparagoza, Samrah Angeles, Rachelle Anne Barbecho, Jeko Jann G. Heyres, Carl Jay G. Ostaga, Jovan A. Prudente, Alexa Mae Serjas, Khent Brylle L. Yson (BSCE, Highway & Railway Engineering), and Ebrahim A. Omar (Faculty of Civil Engineering), University of Southern Mindanao, Kabacan, Cotabato.
 
 ## License
 
