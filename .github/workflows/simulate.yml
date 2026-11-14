@@ -1,0 +1,48 @@
+name: Run SUMO simulation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - config.json
+      - field_data.json
+      - run_bmp.py
+      - .github/workflows/simulate.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: simulate
+  cancel-in-progress: true
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install SUMO and matplotlib
+        run: |
+          pip install eclipse-sumo matplotlib
+          echo "SUMO_HOME=$(python -c 'import sumo; print(sumo.SUMO_HOME)')" >> "$GITHUB_ENV"
+
+      - name: Run scenarios (5 scenarios x 3 peaks x 5 seeds)
+        run: python run_bmp.py
+
+      - name: Export 3D replay
+        run: python run_bmp.py --replay
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results replay
+          git commit -m "Update SUMO results and 3D replay [skip ci]" || echo "No changes"
+          git push
