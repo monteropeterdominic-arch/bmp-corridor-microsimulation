@@ -56,17 +56,17 @@ Total vehicular demand is identical in every scenario.
 
 ## Results
 
-Corridor: USM Avenue, 607 m (OpenStreetMap way 4302974), one-way, 2 lanes, 40 km/h. Results are produced automatically by the **Run SUMO simulation** GitHub Action whenever `config.json`, `field_data.json` or `run_bmp.py` changes.
+Corridor: USM Avenue, 607 m (OpenStreetMap way 4302974), one-way, 2 lanes, 40 km/h. Side friction is on the west curb, where the side streets (e.g. Matalam Street) join. Results are produced automatically by the **Run SUMO simulation** GitHub Action whenever `config.json`, `field_data.json` or `run_bmp.py` changes.
 
 Baseline validation: 10 of 12 fifteen-minute gate counts (83%) have GEH < 5 (target ≥ 85%); the two misses are the morning intervals at 07:00 and 07:15, where the observed surge-and-drop is smoother in the model.
 
 | Scenario | Morning time loss (s/veh) | Change | Midday time loss (s/veh) | Change | Morning CO₂ change |
 |---|---|---|---|---|---|
-| S0 Existing conditions | 9.8 | — | 6.8 | — | — |
-| S1 Tricycle loading bay | 8.0 | -18% | 6.2 | -10% | -4% |
-| S2 No-parking enforcement | 6.7 | -31% | 5.5 | -19% | -9% |
-| S3 Controlled pedestrian crossing | 10.0 | +2% | 7.4 | +9% | -1% |
-| S4 Combined (S1+S2+S3) | 4.7 | -52% | 4.9 | -28% | -14% |
+| S0 Existing conditions | 23.3 | — | 12.8 | — | — |
+| S1 Tricycle loading bay | 11.7 | -50% | 8.8 | -31% | -15% |
+| S2 No-parking enforcement | 12.1 | -48% | 7.9 | -38% | -16% |
+| S3 Controlled pedestrian crossing | 20.1 | -14% | 12.1 | -5% | -5% |
+| S4 Combined (S1+S2+S3) | 5.8 | -75% | 6.0 | -53% | -26% |
 
 ![Observed vs simulated gate counts](results/fig_validation.png)
 ![Time loss by scenario](results/fig_time_loss.png)
