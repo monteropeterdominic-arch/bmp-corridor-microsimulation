@@ -54,6 +54,28 @@ Mixed traffic uses SUMO's sublane model (lateral resolution 0.8 m), so motorcycl
 
 Total vehicular demand is identical in every scenario.
 
+## Results (provisional)
+
+Baseline validation: 11 of 12 fifteen-minute gate counts (92%) have GEH < 5 (target ≥ 85%).
+
+| Scenario | Morning time loss (s/veh) | Change | Midday time loss (s/veh) | Change | Morning CO₂ change |
+|---|---|---|---|---|---|
+| S0 Existing conditions | 12.8 | — | 8.1 | — | — |
+| S1 Tricycle loading bay | 9.2 | -28% | 6.9 | -15% | -6% |
+| S2 No-parking enforcement | 7.3 | -43% | 5.7 | -29% | -12% |
+| S3 Controlled pedestrian crossing | 13.0 | +1% | 10.3 | +28% | +0% |
+| S4 Combined (S1+S2+S3) | 4.9 | -62% | 5.1 | -37% | -18% |
+
+![Observed vs simulated gate counts](results/fig_validation.png)
+![Time loss by scenario](results/fig_time_loss.png)
+
+These results use the placeholder segment lengths in `config.json` (150 m and 250 m). They will be updated after the corridor is measured.
+
+## Field data
+
+![Vehicle composition](docs/fig06_composition.png)
+![Entry vs gate](docs/fig07_entry_gate.png)
+
 ## Dashboard
 
 `index.html` runs in any browser with no installation. With GitHub Pages enabled (Settings → Pages → Deploy from branch → `main` / root), it is served at

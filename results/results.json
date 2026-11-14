@@ -1,0 +1,602 @@
+{
+ "generated_with": "run_bmp.py",
+ "config": {
+  "_README": "Edit the values marked MEASURE or ASSUME before running. All lengths in metres, times in seconds.",
+  "geometry": {
+   "entry_segment_length_m": 150,
+   "mid_segment_length_m": 250,
+   "_MEASURE_lengths": "Measure in QGIS/Google Earth: entry point -> mid-segment observation point, and mid-segment point -> USM gate.",
+   "lanes": 2,
+   "lane_width_m": 3.0,
+   "_MEASURE_lanes": "Paper describes a narrow two-lane one-way road. Confirm lane count and carriageway width on site.",
+   "speed_limit_kph": 30,
+   "side_street_offset_m": 0
+  },
+  "friction": {
+   "friction_zone_start_frac": 0.2,
+   "friction_zone_end_frac": 0.8,
+   "dwell_cv": 0.3,
+   "puv_stop_dwell_s": 20,
+   "parked_event_duration_s": 60,
+   "_ASSUME": "puv_stop_dwell_s and parked_event_duration_s were not measured; refine from video if available."
+  },
+  "pedestrians": {
+   "group_size": 5,
+   "crossing_block_s": 7,
+   "_ASSUME": "Pedestrians cross in groups of ~5; each group blocks the carriageway ~7 s (6 m at ~1.0 m/s plus start-up).",
+   "controlled_cycle_s": 90,
+   "controlled_ped_phase_s": 12
+  },
+  "tricycle_bay": {
+   "position_frac": 0.45,
+   "length_m": 30,
+   "capacity": 8
+  },
+  "simulation": {
+   "warmup_s": 900,
+   "step_length_s": 0.5,
+   "lateral_resolution_m": 0.8,
+   "clearance_s": 900,
+   "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "scenarios": {
+   "S0_baseline": {
+    "label": "Existing conditions",
+    "tricycle_bay": false,
+    "no_parking": false,
+    "controlled_crossing": false
+   },
+   "S1_tricycle_bay": {
+    "label": "Tricycle loading bay",
+    "tricycle_bay": true,
+    "no_parking": false,
+    "controlled_crossing": false
+   },
+   "S2_no_parking": {
+    "label": "No-parking enforcement",
+    "tricycle_bay": false,
+    "no_parking": true,
+    "controlled_crossing": false
+   },
+   "S3_ctrl_crossing": {
+    "label": "Controlled pedestrian crossing",
+    "tricycle_bay": false,
+    "no_parking": false,
+    "controlled_crossing": true
+   },
+   "S4_combined": {
+    "label": "Combined (S1+S2+S3)",
+    "tricycle_bay": true,
+    "no_parking": true,
+    "controlled_crossing": true
+   }
+  }
+ },
+ "results": {
+  "S0_baseline": {
+   "morning": {
+    "scenario": "S0_baseline",
+    "label": "Existing conditions",
+    "period": "morning",
+    "travel_time_s": 76.37,
+    "travel_time_s_sd": 3.98,
+    "time_loss_s": 12.82,
+    "time_loss_s_sd": 4.13,
+    "waiting_s": 2.67,
+    "waiting_s_sd": 1.97,
+    "mid_speed_kph": 19.52,
+    "mid_speed_kph_sd": 1.08,
+    "max_halting": 35.2,
+    "max_halting_sd": 18.14,
+    "co2_kg": 129.99,
+    "co2_kg_sd": 6.23,
+    "gate_total": 1298.4,
+    "gate_total_sd": 7.13,
+    "gate_counts": [
+     201.2,
+     333.8,
+     392.2,
+     371.2
+    ],
+    "travel_time_s_chg_pct": 0.0,
+    "time_loss_s_chg_pct": 0.0,
+    "co2_kg_chg_pct": 0.0
+   },
+   "midday": {
+    "scenario": "S0_baseline",
+    "label": "Existing conditions",
+    "period": "midday",
+    "travel_time_s": 71.59,
+    "travel_time_s_sd": 1.33,
+    "time_loss_s": 8.08,
+    "time_loss_s_sd": 1.25,
+    "waiting_s": 0.93,
+    "waiting_s_sd": 0.39,
+    "mid_speed_kph": 20.66,
+    "mid_speed_kph_sd": 0.49,
+    "max_halting": 16.4,
+    "max_halting_sd": 8.68,
+    "co2_kg": 105.07,
+    "co2_kg_sd": 4.18,
+    "gate_total": 1247.6,
+    "gate_total_sd": 1.82,
+    "gate_counts": [
+     259.4,
+     286.4,
+     331.4,
+     370.4
+    ],
+    "travel_time_s_chg_pct": 0.0,
+    "time_loss_s_chg_pct": 0.0,
+    "co2_kg_chg_pct": 0.0
+   },
+   "evening": {
+    "scenario": "S0_baseline",
+    "label": "Existing conditions",
+    "period": "evening",
+    "travel_time_s": 63.45,
+    "travel_time_s_sd": 0.56,
+    "time_loss_s": 3.06,
+    "time_loss_s_sd": 0.1,
+    "waiting_s": 0.24,
+    "waiting_s_sd": 0.06,
+    "mid_speed_kph": 24.88,
+    "mid_speed_kph_sd": 0.2,
+    "max_halting": 4.2,
+    "max_halting_sd": 0.45,
+    "co2_kg": 46.15,
+    "co2_kg_sd": 0.46,
+    "gate_total": 614,
+    "gate_total_sd": 3.61,
+    "gate_counts": [
+     154.8,
+     176.4,
+     161.2,
+     121.6
+    ],
+    "travel_time_s_chg_pct": 0.0,
+    "time_loss_s_chg_pct": 0.0,
+    "co2_kg_chg_pct": 0.0
+   }
+  },
+  "S1_tricycle_bay": {
+   "morning": {
+    "scenario": "S1_tricycle_bay",
+    "label": "Tricycle loading bay",
+    "period": "morning",
+    "travel_time_s": 73.15,
+    "travel_time_s_sd": 2.54,
+    "time_loss_s": 9.17,
+    "time_loss_s_sd": 2.01,
+    "waiting_s": 1.82,
+    "waiting_s_sd": 0.85,
+    "mid_speed_kph": 21.17,
+    "mid_speed_kph_sd": 0.73,
+    "max_halting": 25.2,
+    "max_halting_sd": 8.26,
+    "co2_kg": 121.84,
+    "co2_kg_sd": 4.94,
+    "gate_total": 1305,
+    "gate_total_sd": 5.79,
+    "gate_counts": [
+     204.8,
+     337.6,
+     383.2,
+     379.4
+    ],
+    "travel_time_s_chg_pct": -4.2,
+    "time_loss_s_chg_pct": -28.5,
+    "co2_kg_chg_pct": -6.3
+   },
+   "midday": {
+    "scenario": "S1_tricycle_bay",
+    "label": "Tricycle loading bay",
+    "period": "midday",
+    "travel_time_s": 70.47,
+    "travel_time_s_sd": 0.7,
+    "time_loss_s": 6.9,
+    "time_loss_s_sd": 0.39,
+    "waiting_s": 0.88,
+    "waiting_s_sd": 0.04,
+    "mid_speed_kph": 21.64,
+    "mid_speed_kph_sd": 0.24,
+    "max_halting": 12.4,
+    "max_halting_sd": 1.82,
+    "co2_kg": 100.57,
+    "co2_kg_sd": 1.19,
+    "gate_total": 1240.6,
+    "gate_total_sd": 8.38,
+    "gate_counts": [
+     264.8,
+     283.8,
+     328.2,
+     363.8
+    ],
+    "travel_time_s_chg_pct": -1.6,
+    "time_loss_s_chg_pct": -14.6,
+    "co2_kg_chg_pct": -4.3
+   },
+   "evening": {
+    "scenario": "S1_tricycle_bay",
+    "label": "Tricycle loading bay",
+    "period": "evening",
+    "travel_time_s": 63.37,
+    "travel_time_s_sd": 0.45,
+    "time_loss_s": 3.04,
+    "time_loss_s_sd": 0.07,
+    "waiting_s": 0.23,
+    "waiting_s_sd": 0.07,
+    "mid_speed_kph": 25.22,
+    "mid_speed_kph_sd": 0.21,
+    "max_halting": 4.4,
+    "max_halting_sd": 1.14,
+    "co2_kg": 45.64,
+    "co2_kg_sd": 0.3,
+    "gate_total": 613.6,
+    "gate_total_sd": 3.44,
+    "gate_counts": [
+     155,
+     174.2,
+     164,
+     120.4
+    ],
+    "travel_time_s_chg_pct": -0.1,
+    "time_loss_s_chg_pct": -0.7,
+    "co2_kg_chg_pct": -1.1
+   }
+  },
+  "S2_no_parking": {
+   "morning": {
+    "scenario": "S2_no_parking",
+    "label": "No-parking enforcement",
+    "period": "morning",
+    "travel_time_s": 70.95,
+    "travel_time_s_sd": 0.6,
+    "time_loss_s": 7.27,
+    "time_loss_s_sd": 0.47,
+    "waiting_s": 1.03,
+    "waiting_s_sd": 0.16,
+    "mid_speed_kph": 22.23,
+    "mid_speed_kph_sd": 0.2,
+    "max_halting": 18.4,
+    "max_halting_sd": 3.21,
+    "co2_kg": 113.76,
+    "co2_kg_sd": 2.25,
+    "gate_total": 1298,
+    "gate_total_sd": 15.94,
+    "gate_counts": [
+     206.8,
+     332.8,
+     390.8,
+     367.6
+    ],
+    "travel_time_s_chg_pct": -7.1,
+    "time_loss_s_chg_pct": -43.3,
+    "co2_kg_chg_pct": -12.5
+   },
+   "midday": {
+    "scenario": "S2_no_parking",
+    "label": "No-parking enforcement",
+    "period": "midday",
+    "travel_time_s": 69.25,
+    "travel_time_s_sd": 0.36,
+    "time_loss_s": 5.72,
+    "time_loss_s_sd": 0.15,
+    "waiting_s": 0.53,
+    "waiting_s_sd": 0.09,
+    "mid_speed_kph": 22.89,
+    "mid_speed_kph_sd": 0.11,
+    "max_halting": 10.6,
+    "max_halting_sd": 2.88,
+    "co2_kg": 94.75,
+    "co2_kg_sd": 1.54,
+    "gate_total": 1240.4,
+    "gate_total_sd": 6.23,
+    "gate_counts": [
+     261,
+     288,
+     326.6,
+     364.8
+    ],
+    "travel_time_s_chg_pct": -3.3,
+    "time_loss_s_chg_pct": -29.2,
+    "co2_kg_chg_pct": -9.8
+   },
+   "evening": {
+    "scenario": "S2_no_parking",
+    "label": "No-parking enforcement",
+    "period": "evening",
+    "travel_time_s": 63.33,
+    "travel_time_s_sd": 0.51,
+    "time_loss_s": 3.0,
+    "time_loss_s_sd": 0.12,
+    "waiting_s": 0.19,
+    "waiting_s_sd": 0.03,
+    "mid_speed_kph": 25.69,
+    "mid_speed_kph_sd": 0.24,
+    "max_halting": 4.2,
+    "max_halting_sd": 0.84,
+    "co2_kg": 45.07,
+    "co2_kg_sd": 0.68,
+    "gate_total": 614.6,
+    "gate_total_sd": 2.3,
+    "gate_counts": [
+     157.6,
+     170.4,
+     165.2,
+     121.4
+    ],
+    "travel_time_s_chg_pct": -0.2,
+    "time_loss_s_chg_pct": -2.0,
+    "co2_kg_chg_pct": -2.3
+   }
+  },
+  "S3_ctrl_crossing": {
+   "morning": {
+    "scenario": "S3_ctrl_crossing",
+    "label": "Controlled pedestrian crossing",
+    "period": "morning",
+    "travel_time_s": 76.56,
+    "travel_time_s_sd": 2.43,
+    "time_loss_s": 12.96,
+    "time_loss_s_sd": 2.51,
+    "waiting_s": 2.79,
+    "waiting_s_sd": 1.27,
+    "mid_speed_kph": 19.64,
+    "mid_speed_kph_sd": 0.39,
+    "max_halting": 33,
+    "max_halting_sd": 4.95,
+    "co2_kg": 130.0,
+    "co2_kg_sd": 4.85,
+    "gate_total": 1299.2,
+    "gate_total_sd": 12.85,
+    "gate_counts": [
+     201,
+     342.4,
+     379.6,
+     376.2
+    ],
+    "travel_time_s_chg_pct": 0.2,
+    "time_loss_s_chg_pct": 1.1,
+    "co2_kg_chg_pct": 0.0
+   },
+   "midday": {
+    "scenario": "S3_ctrl_crossing",
+    "label": "Controlled pedestrian crossing",
+    "period": "midday",
+    "travel_time_s": 73.84,
+    "travel_time_s_sd": 5.56,
+    "time_loss_s": 10.35,
+    "time_loss_s_sd": 5.65,
+    "waiting_s": 2.38,
+    "waiting_s_sd": 3.08,
+    "mid_speed_kph": 20.26,
+    "mid_speed_kph_sd": 1.06,
+    "max_halting": 28.6,
+    "max_halting_sd": 31.67,
+    "co2_kg": 108.45,
+    "co2_kg_sd": 10.28,
+    "gate_total": 1245,
+    "gate_total_sd": 4.74,
+    "gate_counts": [
+     261.6,
+     283.6,
+     331.2,
+     368.6
+    ],
+    "travel_time_s_chg_pct": 3.1,
+    "time_loss_s_chg_pct": 28.1,
+    "co2_kg_chg_pct": 3.2
+   },
+   "evening": {
+    "scenario": "S3_ctrl_crossing",
+    "label": "Controlled pedestrian crossing",
+    "period": "evening",
+    "travel_time_s": 64.32,
+    "travel_time_s_sd": 0.55,
+    "time_loss_s": 3.95,
+    "time_loss_s_sd": 0.29,
+    "waiting_s": 0.66,
+    "waiting_s_sd": 0.14,
+    "mid_speed_kph": 24.38,
+    "mid_speed_kph_sd": 0.24,
+    "max_halting": 5.2,
+    "max_halting_sd": 0.45,
+    "co2_kg": 46.84,
+    "co2_kg_sd": 0.56,
+    "gate_total": 615.4,
+    "gate_total_sd": 7.64,
+    "gate_counts": [
+     155.8,
+     176,
+     163.6,
+     120
+    ],
+    "travel_time_s_chg_pct": 1.4,
+    "time_loss_s_chg_pct": 29.1,
+    "co2_kg_chg_pct": 1.5
+   }
+  },
+  "S4_combined": {
+   "morning": {
+    "scenario": "S4_combined",
+    "label": "Combined (S1+S2+S3)",
+    "period": "morning",
+    "travel_time_s": 68.69,
+    "travel_time_s_sd": 0.46,
+    "time_loss_s": 4.9,
+    "time_loss_s_sd": 0.07,
+    "waiting_s": 0.75,
+    "waiting_s_sd": 0.05,
+    "mid_speed_kph": 24.18,
+    "mid_speed_kph_sd": 0.12,
+    "max_halting": 16.4,
+    "max_halting_sd": 2.07,
+    "co2_kg": 107.3,
+    "co2_kg_sd": 1.93,
+    "gate_total": 1304.2,
+    "gate_total_sd": 5.36,
+    "gate_counts": [
+     203.8,
+     332,
+     381.4,
+     387
+    ],
+    "travel_time_s_chg_pct": -10.1,
+    "time_loss_s_chg_pct": -61.8,
+    "co2_kg_chg_pct": -17.5
+   },
+   "midday": {
+    "scenario": "S4_combined",
+    "label": "Combined (S1+S2+S3)",
+    "period": "midday",
+    "travel_time_s": 68.66,
+    "travel_time_s_sd": 0.46,
+    "time_loss_s": 5.06,
+    "time_loss_s_sd": 0.12,
+    "waiting_s": 0.68,
+    "waiting_s_sd": 0.03,
+    "mid_speed_kph": 23.71,
+    "mid_speed_kph_sd": 0.15,
+    "max_halting": 11.6,
+    "max_halting_sd": 1.82,
+    "co2_kg": 91.9,
+    "co2_kg_sd": 2.78,
+    "gate_total": 1247.6,
+    "gate_total_sd": 4.22,
+    "gate_counts": [
+     263,
+     284.6,
+     331.8,
+     368.2
+    ],
+    "travel_time_s_chg_pct": -4.1,
+    "time_loss_s_chg_pct": -37.4,
+    "co2_kg_chg_pct": -12.5
+   },
+   "evening": {
+    "scenario": "S4_combined",
+    "label": "Combined (S1+S2+S3)",
+    "period": "evening",
+    "travel_time_s": 63.84,
+    "travel_time_s_sd": 0.53,
+    "time_loss_s": 3.57,
+    "time_loss_s_sd": 0.17,
+    "waiting_s": 0.64,
+    "waiting_s_sd": 0.12,
+    "mid_speed_kph": 25.57,
+    "mid_speed_kph_sd": 0.25,
+    "max_halting": 5.4,
+    "max_halting_sd": 0.55,
+    "co2_kg": 45.61,
+    "co2_kg_sd": 0.36,
+    "gate_total": 613.4,
+    "gate_total_sd": 5.03,
+    "gate_counts": [
+     154.4,
+     168.8,
+     167,
+     123.2
+    ],
+    "travel_time_s_chg_pct": 0.6,
+    "time_loss_s_chg_pct": 16.7,
+    "co2_kg_chg_pct": -1.2
+   }
+  }
+ },
+ "validation": {
+  "rows": [
+   {
+    "period": "morning",
+    "interval": "06:30",
+    "observed": 203,
+    "simulated": 201.2,
+    "GEH": 0.25
+   },
+   {
+    "period": "morning",
+    "interval": "06:45",
+    "observed": 347,
+    "simulated": 333.8,
+    "GEH": 1.43
+   },
+   {
+    "period": "morning",
+    "interval": "07:00",
+    "observed": 442,
+    "simulated": 392.2,
+    "GEH": 4.88
+   },
+   {
+    "period": "morning",
+    "interval": "07:15",
+    "observed": 298,
+    "simulated": 371.2,
+    "GEH": 8.0
+   },
+   {
+    "period": "midday",
+    "interval": "11:15",
+    "observed": 263,
+    "simulated": 259.4,
+    "GEH": 0.45
+   },
+   {
+    "period": "midday",
+    "interval": "11:30",
+    "observed": 287,
+    "simulated": 286.4,
+    "GEH": 0.07
+   },
+   {
+    "period": "midday",
+    "interval": "11:45",
+    "observed": 302,
+    "simulated": 331.4,
+    "GEH": 3.3
+   },
+   {
+    "period": "midday",
+    "interval": "12:00",
+    "observed": 375,
+    "simulated": 370.4,
+    "GEH": 0.48
+   },
+   {
+    "period": "evening",
+    "interval": "19:30",
+    "observed": 150,
+    "simulated": 154.8,
+    "GEH": 0.78
+   },
+   {
+    "period": "evening",
+    "interval": "19:45",
+    "observed": 175,
+    "simulated": 176.4,
+    "GEH": 0.21
+   },
+   {
+    "period": "evening",
+    "interval": "20:00",
+    "observed": 163,
+    "simulated": 161.2,
+    "GEH": 0.28
+   },
+   {
+    "period": "evening",
+    "interval": "20:15",
+    "observed": 118,
+    "simulated": 121.6,
+    "GEH": 0.66
+   }
+  ],
+  "pct_GEH_below_5": 91.7
+ }
+}

@@ -221,6 +221,8 @@ document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{tab=b.datase
  ["field","friction","sim","about"].forEach(t=>document.getElementById("t-"+t).classList.toggle("hidden",t!==tab));render()});
 function render(){seg();if(tab==="field")renderField();if(tab==="friction")renderFric();if(tab==="sim")renderSim()}
 render();
+// When served from GitHub Pages (or any web server) load the bundled results automatically.
+fetch('results/results.json').then(r=>r.ok?r.json():null).then(j=>{if(j){loadSim(j);alert0('Showing results/results.json from this repository. Drop another file to replace it.')}}).catch(()=>{});
 </script>
 </body>
 </html>
