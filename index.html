@@ -60,7 +60,7 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
  <section id="t-field">
   <div class="grid g4" id="kpis"></div>
   <div class="card" style="margin-top:14px;padding:10px">
-   <div class="row" style="margin:0 4px 8px"><div><h3>3D SUMO simulation of USM Avenue</h3><div class="sub" style="margin:0">Simulated vehicles replayed on the real corridor (07:00–07:15). Drag to rotate, scroll to zoom.</div></div>
+   <div class="row" style="margin:0 4px 8px"><div><h3>3D SUMO simulation of USM Avenue</h3><div class="sub" style="margin:0">Simulated traffic on USM Avenue, 07:00–07:15. It plays automatically; drag to rotate, scroll to zoom.</div></div>
     <div style="display:flex;gap:8px"><button id="sim3dFS" style="background:#14323f;color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer">⛶ Full screen</button><a href="simulation3d.html" target="_blank" rel="noopener" style="border:1px solid var(--line);border-radius:8px;padding:7px 12px;color:var(--accent);font-weight:600;text-decoration:none;white-space:nowrap">Open in new tab ↗</a></div></div>
    <iframe id="sim3d" src="simulation3d.html?embed=1" title="3D SUMO simulation" style="width:100%;height:620px;border:0;border-radius:8px;display:block" allow="fullscreen"></iframe>
   </div>
@@ -226,54 +226,6 @@ document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{tab=b.datase
  ["field","friction","sim","about"].forEach(t=>document.getElementById("t-"+t).classList.toggle("hidden",t!==tab));render()});
 function render(){seg();if(tab==="field")renderField();if(tab==="friction")renderFric();if(tab==="sim")renderSim()}
 render();
-// ---------------- Mapbox corridor map
-const MAPBOX_TOKEN='pk.eyJ1IjoicGV0ZXJkb21pbmljIiwiYSI6ImNtdnc3NThkOTA1b2Eyd3ExNW5mdG85ancifQ.wUKa4dvO6FLRadv2xAKeWQ';
-const PT_NAMES=['entry','mid','gate'],PT_LABEL={entry:'Entry point',mid:'Mid-segment',gate:'USM gate'},PT_COL={entry:'#2a78d6',mid:'#eb6834',gate:'#1baf7a'};
-let map=null,markers=[],picking=-1,picked={};
-function hav(a,b){const R=6371000,r=x=>x*Math.PI/180,dl=r(b[1]-a[1]),dn=r(b[0]-a[0]);const h=Math.sin(dl/2)**2+Math.cos(r(a[1]))*Math.cos(r(b[1]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
-function drawCorridor(c,fit){
- markers.forEach(m=>m.remove());markers=[];
- PT_NAMES.filter(k=>c[k]).forEach(k=>{const el=document.createElement('div');
-  el.style.cssText=`width:16px;height:16px;border-radius:50%;background:${PT_COL[k]};border:2px solid #fff;box-shadow:0 0 0 1px #0006`;
-  markers.push(new mapboxgl.Marker({element:el}).setLngLat(c[k]).setPopup(new mapboxgl.Popup({offset:10}).setText(PT_LABEL[k])).addTo(map))});
- const line=c.path&&c.path.length>1?c.path:PT_NAMES.filter(k=>c[k]).map(k=>c[k]);
- const gj={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line.length>1?line:[]}};
- const src=map.getSource('corr');
- if(src)src.setData(gj);else{map.addSource('corr',{type:'geojson',data:gj});
-  map.addLayer({id:'corr-glow',type:'line',source:'corr',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,10,18,80],'line-blur':['interpolate',['linear'],['zoom'],13,6,18,36],'line-opacity':.55}});
-  map.addLayer({id:'corr',type:'line',source:'corr',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,3,18,8]}})}
- const parts=[];
- if(c.entry&&c.mid)parts.push(`Entry → mid-segment: <b>${hav(c.entry,c.mid).toFixed(0)} m</b>`);
- if(c.mid&&c.gate)parts.push(`Mid-segment → USM gate: <b>${hav(c.mid,c.gate).toFixed(0)} m</b>`);
- if(c.length_m)parts.push(`USM Avenue length along the road: <b>${c.length_m.toFixed(0)} m</b> (OpenStreetMap)`);
- if(c.entry&&c.mid&&c.gate)parts.push(`Total: <b>${(hav(c.entry,c.mid)+hav(c.mid,c.gate)).toFixed(0)} m</b> (straight lines between points)`);
- document.getElementById('mapOut').innerHTML=parts.join(' · ');
- if(fit&&line.length>1){const b=new mapboxgl.LngLatBounds();line.forEach(p=>b.extend(p));map.fitBounds(b,{padding:60,maxZoom:18})}}
-function initMap(){
- const box=document.getElementById('map');
- if(!window.mapboxgl){box.innerHTML='<div class="note" style="padding:16px">The map could not load here. Open the GitHub Pages version of this dashboard.</div>';document.getElementById('setPts').disabled=true;return}
- mapboxgl.accessToken=MAPBOX_TOKEN;
- map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/satellite-streets-v12',center:[124.8298,7.1092],zoom:16});
- map.addControl(new mapboxgl.NavigationControl(),'top-right');
- map.addControl(new mapboxgl.ScaleControl({unit:'metric'}));
- const bootMap=()=>{fetch('corridor.json').then(r=>r.ok?r.json():null).then(c=>{if(c&&c.entry){picked=c;drawCorridor(c,true);document.getElementById('mapSub').textContent='USM Avenue (study corridor) from corridor.json'}}).catch(()=>{})};
- let mapBooted=false;const tryBootMap=()=>{if(mapBooted)return;if(map.isStyleLoaded()||(map.style&&map.style._loaded)){mapBooted=true;bootMap()}else setTimeout(tryBootMap,400)};
- map.on('style.load',tryBootMap);tryBootMap();
- map.on('click',e=>{
-  if(picking<0)return;
-  picked[PT_NAMES[picking]]=[+e.lngLat.lng.toFixed(6),+e.lngLat.lat.toFixed(6)];
-  drawCorridor(picked,false);picking++;
-  if(picking>=3){
-   picking=-1;map.getCanvas().style.cursor='';
-   const js=JSON.stringify(picked);
-   document.getElementById('mapSub').textContent='Points set. Save the JSON below as corridor.json in the repository to keep them.';
-   const out=document.getElementById('mapOut');
-   out.insertAdjacentHTML('beforeend',`<br><textarea readonly style="width:100%;margin-top:6px;font:12px monospace" rows="2">${js}</textarea><br><button id="cpy" style="margin-top:4px">Copy JSON</button>`);
-   document.getElementById('cpy').onclick=()=>navigator.clipboard.writeText(js).then(()=>{document.getElementById('cpy').textContent='Copied'},()=>{});
-  } else document.getElementById('mapSub').textContent=`Click the ${PT_LABEL[PT_NAMES[picking]]} on the map`;
- });
- document.getElementById('setPts').onclick=()=>{picking=0;picked={};drawCorridor({},false);map.getCanvas().style.cursor='crosshair';document.getElementById('mapSub').textContent='Click the Entry point on the map'};
-}
 document.getElementById('sim3dFS').onclick=()=>{const f=document.getElementById('sim3d');(f.requestFullscreen||f.webkitRequestFullscreen).call(f)};
 // When served from GitHub Pages (or any web server) load the bundled results automatically.
 fetch('results/results.json').then(r=>r.ok?r.json():null).then(j=>{if(j){loadSim(j);alert0('Showing results/results.json from this repository. Drop another file to replace it.')}}).catch(()=>{});

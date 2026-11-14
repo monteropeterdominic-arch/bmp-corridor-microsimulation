@@ -82,14 +82,14 @@ These results use the placeholder segment lengths in `config.json` (150 m and 25
 `https://monteropeterdominic-arch.github.io/bmp-corridor-microsimulation/`.
 On GitHub Pages the dashboard loads `results/results.json` automatically.
 
-The **Field observations** tab includes a Mapbox satellite map of the corridor. Click **Set observation points**, then click the entry point, the mid-segment point and the USM gate. The map reports the two segment lengths for `config.json` and gives the coordinates as JSON. Save that JSON as `corridor.json` in the repository root so the points appear for every visitor.
+The **Field observations** tab opens with the 3D SUMO simulation of USM Avenue, which plays automatically.
 
 ## 3D simulation
 
 `simulation3d.html` replays SUMO vehicle trajectories in 3D on a Mapbox map with 3D buildings: cars, motorcycles, tricycles, jeepneys and trucks move along the real corridor, and pedestrians appear at the USM gate whenever they hold up traffic. It compares existing conditions (S0) with the combined measures (S4) for the 07:00–07:15 morning interval.
 
 1. Run `python run_bmp.py --replay` (or double-click `RUN_REPLAY.bat`). This writes `replay/replay_S0_baseline_morning.json` and `replay/replay_S4_combined_morning.json`.
-2. Add the `replay/` folder and `corridor.json` (the three observation points, which you can pick in the dashboard map) to the repository.
+2. Add the `replay/` folder to the repository. The corridor geometry comes from `corridor.json` (USM Avenue, OpenStreetMap way 4302974).
 3. Open `https://monteropeterdominic-arch.github.io/bmp-corridor-microsimulation/simulation3d.html`.
 
 ## Authors
