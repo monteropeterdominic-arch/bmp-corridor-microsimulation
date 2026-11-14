@@ -106,7 +106,11 @@ function buildGeo(c,g){const o=c.entry,raw=c.path&&c.path.length>1?c.path:[c.ent
  const m=toLocal(c.mid,o);let best=1e9,midS=total*g.Le/(g.Le+g.Lm);
  for(let i=1;i<pts.length;i++){const a=pts[i-1],d=sub(pts[i],a),L2=d[0]*d[0]+d[1]*d[1]||1,f=Math.max(0,Math.min(1,((m[0]-a[0])*d[0]+(m[1]-a[1])*d[1])/L2)),q=add(a,mul(d,f)),e=len(sub(m,q));if(e<best){best=e;midS=cum[i-1]+f*len(d)}}
  const uEnd=unit(sub(pts[pts.length-1],pts[pts.length-2]));
- return{o,pts,cum,total,midS,Le:g.Le,Lm:g.Lm,exit:g.exit||60,half:g.lanes*g.laneW/2,G:pts[pts.length-1],u2:uEnd}}
+ let side=null;if(c.side_street&&c.side_street.path&&c.side_street.path.length>1){const sp=c.side_street.path.map(p=>toLocal(p,o)),sc=[0];for(let i=1;i<sp.length;i++)sc.push(sc[i-1]+len(sub(sp[i],sp[i-1])));side={pts:sp,cum:sc,name:c.side_street.name}}
+ return{o,pts,cum,total,midS,Le:g.Le,Lm:g.Lm,exit:g.exit||60,half:g.lanes*g.laneW/2,G:pts[pts.length-1],u2:uEnd,side}}
+function sideAt(dd){const q=geo.side;let i=1;while(i<q.cum.length-1&&q.cum[i]<dd)i++;const a=q.pts[i-1],b=q.pts[i],f=Math.min(1,(dd-q.cum[i-1])/(q.cum[i]-q.cum[i-1]||1)),u=unit(sub(a,b));
+ // u points toward the avenue (direction of travel); keep vehicles on the right-hand lane of the side street
+ return{P:add(add(a,mul(sub(b,a),f)),mul(left(u),-1.5)),u}}
 function atS(s){const q=geo;if(s>=q.total)return{P:add(q.G,mul(q.u2,s-q.total)),u:q.u2};if(s<=0){const u=unit(sub(q.pts[1],q.pts[0]));return{P:add(q.pts[0],mul(u,s)),u}}
  let i=1;while(q.cum[i]<s)i++;const a=q.pts[i-1],b=q.pts[i],f=(s-q.cum[i-1])/(q.cum[i]-q.cum[i-1]||1);return{P:add(a,mul(sub(b,a),f)),u:unit(sub(b,a))}}
 function sOf(x){const q=geo;if(x<=q.Le)return x*q.midS/q.Le;if(x<=q.Le+q.Lm)return q.midS+(x-q.Le)*(q.total-q.midS)/q.Lm;return q.total+(x-q.Le-q.Lm)}
@@ -115,18 +119,21 @@ function place(x,y){const r=atS(sOf(x));return{P:add(r.P,mul(left(r.u),y+geo.hal
 // ---------------- vehicle features for time t (seconds, fractional)
 function vehicleFeatures(tt){const roadW=cur.geom.lanes*cur.geom.laneW;const feats=[];let n=0,sum=0,stop=0,out=0;const k=Math.floor(tt),f=tt-k,types=cur.types;
  for(const v of cur.veh){const [ti,start,xs,ys,vs]=v,i=k-start;if(i<0)continue;if(i>=xs.length){if(xs[xs.length-1]>cur.geom.Le+cur.geom.Lm)out++;continue}
-  if(ys[i]<-roadW-0.8||ys[i]>0.8)continue;           // still on the side street: not on USM Avenue yet
-  const j=Math.min(i+1,xs.length-1),x=xs[i]+(xs[j]-xs[i])*f,y=Math.max(-roadW+0.6,Math.min(-0.6,ys[i]+(ys[j]-ys[i])*f)),sp=vs[i];
-  const a=place(x,y);let h;
-  const jn=Math.min(i+1,xs.length-1),jp=Math.max(i-1,0);
+  if(ys[i]<-roadW-0.8)continue;
+  const onSide=ys[i]>0.8&&geo.side;                    // on the side street (Matalam Street), approaching the avenue
+  if(ys[i]>0.8&&!geo.side)continue;
   const cl=v=>Math.max(-roadW+0.6,Math.min(-0.6,v));
-  const p2=place(xs[jn],cl(ys[jn])).P,p1=place(xs[jp],cl(ys[jp])).P,dv=sub(p2,p1);
+  const pos=(xx,yy)=>yy>0.8&&geo.side?sideAt(yy+geo.half):place(xx,cl(yy));
+  const j=Math.min(i+1,xs.length-1),x=xs[i]+(xs[j]-xs[i])*f,y=ys[i]+(ys[j]-ys[i])*f,sp=vs[i];
+  const a=pos(x,y);let h;
+  const jn=Math.min(i+1,xs.length-1),jp=Math.max(i-1,0);
+  const p2=pos(xs[jn],ys[jn]).P,p1=pos(xs[jp],ys[jp]).P,dv=sub(p2,p1);
   h=len(dv)>0.2?unit(dv):a.u; v.h=len(dv)>0.2?h:(v.h||a.u); h=v.h;
   const type=types[ti],dim=cur.vtype_dims[type],L=dim[0],W=dim[1],n2=left(h);
   const back=sub(a.P,mul(h,L)),hw=W/2;
   const ring=[add(a.P,mul(n2,hw)),add(a.P,mul(n2,-hw)),add(back,mul(n2,-hw)),add(back,mul(n2,hw))].map(p=>toLL(p,geo.o));ring.push(ring[0]);
   feats.push({type:'Feature',properties:{c:COLORS[type],h:HEIGHT[type]},geometry:{type:'Polygon',coordinates:[ring]}});
-  if(x>=0&&x<=cur.geom.Le+cur.geom.Lm){n++;sum+=sp;if(sp<5)stop++}}
+  if(!onSide&&x>=0&&x<=cur.geom.Le+cur.geom.Lm){n++;sum+=sp;if(sp<5)stop++}}
  return{feats,n,avg:n?sum/n:null,stop,out}}
 
 function pedRed(tt){return cur.ped_red.some(r=>tt>=r[0]&&tt<r[1])}
@@ -144,20 +151,23 @@ function roadFeatures(){const q=geo,n=60,line=[];for(let i=0;i<=n;i++)line.push(
  const surf={type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[[...lft,...rgt.reverse(),lft[0]]]}};
  const laneF={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:lane}};
  const zone=[];for(let k=0;k<=20;k++){const x=q.Le+q.Lm*(0.2+0.6*k/20);zone.push(toLL(place(x,0.6).P,q.o))}   // west (left) curb
- return{surf,laneF,line:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line}},zl:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:zone}}}}
+ const sideF={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:q.side?q.side.pts.map(p=>toLL(p,q.o)):[]}};
+ return{sideF,surf,laneF,line:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line}},zl:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:zone}}}}
 
 // ---------------- map
 let labels=[];
 function addLabels(){labels.forEach(m=>m.remove());labels=[];if(!geo)return;
  const mk=(ll,html,cls)=>{const el=document.createElement('div');el.innerHTML=html;el.style.cssText='background:#14323f;color:#fff;font:600 12px Inter,sans-serif;padding:4px 8px;border-radius:6px;box-shadow:0 1px 6px #0006;white-space:nowrap;'+(cls||'');labels.push(new mapboxgl.Marker({element:el,anchor:'bottom',offset:[0,-6]}).setLngLat(ll).addTo(map))};
  mk(toLL(atS(geo.total*0.55).P,geo.o),'USM Avenue · study corridor','background:#ffd400;color:#14323f;font-size:13px');
- mk(toLL(geo.pts[0],geo.o),'Davao–Cotabato Road (entry)');mk(toLL(geo.G,geo.o),'USM gate')}
+ mk(toLL(geo.pts[0],geo.o),'Davao–Cotabato Road (entry)');
+ if(geo.side)mk(toLL(geo.side.pts[Math.min(1,geo.side.pts.length-1)],geo.o),geo.side.name+' (side-street inflow)','background:#ff9f43;color:#14323f');mk(toLL(geo.G,geo.o),'USM gate')}
 function addLayers(){if(!geo)return;
  const r=roadFeatures();
- const srcs={surf:{type:'FeatureCollection',features:[r.surf]},lane:{type:'FeatureCollection',features:[r.laneF]},hl:{type:'FeatureCollection',features:[r.line]},road:{type:'FeatureCollection',features:[r.line]},zone:{type:'FeatureCollection',features:[r.zl]},veh:{type:'FeatureCollection',features:[]},xing:{type:'FeatureCollection',features:[]}};
+ const srcs={side:{type:'FeatureCollection',features:geo.side?[r.sideF]:[]},surf:{type:'FeatureCollection',features:[r.surf]},lane:{type:'FeatureCollection',features:[r.laneF]},hl:{type:'FeatureCollection',features:[r.line]},road:{type:'FeatureCollection',features:[r.line]},zone:{type:'FeatureCollection',features:[r.zl]},veh:{type:'FeatureCollection',features:[]},xing:{type:'FeatureCollection',features:[]}};
  for(const [k,v] of Object.entries(srcs)){if(map.getSource(k))map.getSource(k).setData(v);else map.addSource(k,{type:'geojson',data:v})}
  if(!map.getLayer('hl-glow'))map.addLayer({id:'hl-glow',type:'line',source:'hl',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,10,18,90],'line-blur':['interpolate',['linear'],['zoom'],13,6,18,40],'line-opacity':.55}});
  if(!map.getLayer('hl-core'))map.addLayer({id:'hl-core',type:'line',source:'hl',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,3,16,6,17,0],'line-opacity':.95}});
+ if(!map.getLayer('side'))map.addLayer({id:'side',type:'line',source:'side',layout:{'line-cap':'round'},paint:{'line-color':'#ff9f43','line-width':['interpolate',['exponential',2],['zoom'],15,2,20,40],'line-opacity':.35}});
  if(!map.getLayer('surf'))map.addLayer({id:'surf',type:'fill',source:'surf',paint:{'fill-color':'#5d6470','fill-opacity':.85}});
  if(!map.getLayer('lane'))map.addLayer({id:'lane',type:'line',source:'lane',paint:{'line-color':'#ffffff','line-width':['interpolate',['exponential',2],['zoom'],15,0.5,20,3],'line-dasharray':[3,3]}});
  if(!map.getLayer('road'))map.addLayer({id:'road',type:'line',source:'road',paint:{'line-color':'#ffffff','line-width':['interpolate',['exponential',2],['zoom'],15,2,20,60],'line-opacity':.18}});

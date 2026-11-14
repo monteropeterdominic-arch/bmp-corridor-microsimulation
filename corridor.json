@@ -7,8 +7,8 @@
   7.1065193
  ],
  "mid": [
-  124.8295152,
-  7.1085044
+  124.8295007,
+  7.1084491
  ],
  "gate": [
   124.8303705,
@@ -36,5 +36,37 @@
    7.1118027
   ]
  ],
- "mid_note": "Mid-segment point placed at the same relative position used in the model (37.5% of length); move it to the actual observation point if known."
+ "mid_note": "Mid-segment point = junction of Matalam Street (OSM node 1776868489), where the model's side street joins.",
+ "side_street": {
+  "name": "Matalam Street",
+  "source": "OpenStreetMap way 166210289 (2 lanes, 40 km/h)",
+  "joins_at_m": 223,
+  "side": "west",
+  "path": [
+   [
+    124.8295007,
+    7.1084491
+   ],
+   [
+    124.8286595,
+    7.1086784
+   ],
+   [
+    124.8274715,
+    7.1089823
+   ],
+   [
+    124.8268824,
+    7.109133
+   ],
+   [
+    124.8257259,
+    7.1094284
+   ],
+   [
+    124.8251084,
+    7.1095856
+   ]
+  ]
+ }
 }
