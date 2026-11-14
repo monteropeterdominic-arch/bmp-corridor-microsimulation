@@ -80,7 +80,9 @@ These results use the placeholder segment lengths in `config.json` (150 m and 25
 
 `index.html` runs in any browser with no installation. With GitHub Pages enabled (Settings → Pages → Deploy from branch → `main` / root), it is served at
 `https://monteropeterdominic-arch.github.io/bmp-corridor-microsimulation/`.
-Open the **SUMO scenarios** tab and load `results/results.json` to display the simulation output.
+On GitHub Pages the dashboard loads `results/results.json` automatically.
+
+The **Field observations** tab includes a Mapbox satellite map of the corridor. Click **Set observation points**, then click the entry point, the mid-segment point and the USM gate. The map reports the two segment lengths for `config.json` and gives the coordinates as JSON. Save that JSON as `corridor.json` in the repository root so the points appear for every visitor.
 
 ## Authors
 

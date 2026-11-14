@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.js"></script>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--mute:#5d6678;--line:#e3e6ec;--accent:#1f6f8b;
  --car:#4a7fc1;--moto:#e8962e;--tri:#2f9e5e;--jeep:#b8418f;--truck:#7d7d7d;--warn:#d9822b;--bad:#c4423c;--ok:#2f9e5e}
@@ -59,6 +61,12 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
  <!-- FIELD -->
  <section id="t-field">
   <div class="grid g4" id="kpis"></div>
+  <div class="card" style="margin-top:14px">
+   <div class="row" style="margin-bottom:6px"><div><h3>Corridor map</h3><div class="sub" id="mapSub">Satellite view of the study corridor</div></div>
+    <button id="setPts" style="border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit">Set observation points</button></div>
+   <div id="map" style="height:380px;border-radius:8px;background:#e9edf1"></div>
+   <div id="mapOut" class="note" style="margin-top:8px"></div>
+  </div>
   <div class="grid g2" style="margin-top:14px">
    <div class="card"><h3>Corridor layout</h3><div class="sub">Click an observation point to see its counts for the selected peak</div>
     <svg viewBox="0 0 520 190" width="100%" id="corr">
@@ -221,6 +229,50 @@ document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{tab=b.datase
  ["field","friction","sim","about"].forEach(t=>document.getElementById("t-"+t).classList.toggle("hidden",t!==tab));render()});
 function render(){seg();if(tab==="field")renderField();if(tab==="friction")renderFric();if(tab==="sim")renderSim()}
 render();
+// ---------------- Mapbox corridor map
+const MAPBOX_TOKEN='pk.eyJ1IjoicGV0ZXJkb21pbmljIiwiYSI6ImNtdnc3NThkOTA1b2Eyd3ExNW5mdG85ancifQ.wUKa4dvO6FLRadv2xAKeWQ';
+const PT_NAMES=['entry','mid','gate'],PT_LABEL={entry:'Entry point',mid:'Mid-segment',gate:'USM gate'},PT_COL={entry:'#2a78d6',mid:'#eb6834',gate:'#1baf7a'};
+let map=null,markers=[],picking=-1,picked={};
+function hav(a,b){const R=6371000,r=x=>x*Math.PI/180,dl=r(b[1]-a[1]),dn=r(b[0]-a[0]);const h=Math.sin(dl/2)**2+Math.cos(r(a[1]))*Math.cos(r(b[1]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function drawCorridor(c,fit){
+ markers.forEach(m=>m.remove());markers=[];
+ PT_NAMES.filter(k=>c[k]).forEach(k=>{const el=document.createElement('div');
+  el.style.cssText=`width:16px;height:16px;border-radius:50%;background:${PT_COL[k]};border:2px solid #fff;box-shadow:0 0 0 1px #0006`;
+  markers.push(new mapboxgl.Marker({element:el}).setLngLat(c[k]).setPopup(new mapboxgl.Popup({offset:10}).setText(PT_LABEL[k])).addTo(map))});
+ const line=PT_NAMES.filter(k=>c[k]).map(k=>c[k]);
+ const gj={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line.length>1?line:[]}};
+ const src=map.getSource('corr');
+ if(src)src.setData(gj);else{map.addSource('corr',{type:'geojson',data:gj});map.addLayer({id:'corr',type:'line',source:'corr',paint:{'line-color':'#ffd166','line-width':4,'line-opacity':.9}})}
+ const parts=[];
+ if(c.entry&&c.mid)parts.push(`Entry → mid-segment: <b>${hav(c.entry,c.mid).toFixed(0)} m</b>`);
+ if(c.mid&&c.gate)parts.push(`Mid-segment → USM gate: <b>${hav(c.mid,c.gate).toFixed(0)} m</b>`);
+ if(c.entry&&c.mid&&c.gate)parts.push(`Total: <b>${(hav(c.entry,c.mid)+hav(c.mid,c.gate)).toFixed(0)} m</b> (straight lines between points)`);
+ document.getElementById('mapOut').innerHTML=parts.join(' · ');
+ if(fit&&line.length>1){const b=new mapboxgl.LngLatBounds();line.forEach(p=>b.extend(p));map.fitBounds(b,{padding:60,maxZoom:18})}}
+function initMap(){
+ const box=document.getElementById('map');
+ if(!window.mapboxgl){box.innerHTML='<div class="note" style="padding:16px">The map could not load here. Open the GitHub Pages version of this dashboard.</div>';document.getElementById('setPts').disabled=true;return}
+ mapboxgl.accessToken=MAPBOX_TOKEN;
+ map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/satellite-streets-v12',center:[124.8239,7.1112],zoom:15});
+ map.addControl(new mapboxgl.NavigationControl(),'top-right');
+ map.addControl(new mapboxgl.ScaleControl({unit:'metric'}));
+ map.on('load',()=>{fetch('corridor.json').then(r=>r.ok?r.json():null).then(c=>{if(c&&c.entry){picked=c;drawCorridor(c,true);document.getElementById('mapSub').textContent='Observation points from corridor.json'}}).catch(()=>{})});
+ map.on('click',e=>{
+  if(picking<0)return;
+  picked[PT_NAMES[picking]]=[+e.lngLat.lng.toFixed(6),+e.lngLat.lat.toFixed(6)];
+  drawCorridor(picked,false);picking++;
+  if(picking>=3){
+   picking=-1;map.getCanvas().style.cursor='';
+   const js=JSON.stringify(picked);
+   document.getElementById('mapSub').textContent='Points set. Save the JSON below as corridor.json in the repository to keep them.';
+   const out=document.getElementById('mapOut');
+   out.insertAdjacentHTML('beforeend',`<br><textarea readonly style="width:100%;margin-top:6px;font:12px monospace" rows="2">${js}</textarea><br><button id="cpy" style="margin-top:4px">Copy JSON</button>`);
+   document.getElementById('cpy').onclick=()=>navigator.clipboard.writeText(js).then(()=>{document.getElementById('cpy').textContent='Copied'},()=>{});
+  } else document.getElementById('mapSub').textContent=`Click the ${PT_LABEL[PT_NAMES[picking]]} on the map`;
+ });
+ document.getElementById('setPts').onclick=()=>{picking=0;picked={};drawCorridor({},false);map.getCanvas().style.cursor='crosshair';document.getElementById('mapSub').textContent='Click the Entry point on the map'};
+}
+initMap();
 // When served from GitHub Pages (or any web server) load the bundled results automatically.
 fetch('results/results.json').then(r=>r.ok?r.json():null).then(j=>{if(j){loadSim(j);alert0('Showing results/results.json from this repository. Drop another file to replace it.')}}).catch(()=>{});
 </script>
