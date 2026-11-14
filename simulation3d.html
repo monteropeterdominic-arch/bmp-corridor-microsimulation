@@ -173,7 +173,7 @@ function initMap(){
   try{const r=await fetch('config.json');if(r.ok){const g=(await r.json()).geometry;cfgGeom={Le:g.entry_segment_length_m,Lm:g.mid_segment_length_m,lanes:g.lanes,laneW:g.lane_width_m,exit:60}}}catch(e){}
   await useScenario($('scen').value);
   if(!corr)needCorridor();};
- let booted=false;const tryBoot=()=>{if(booted)return;if(map.isStyleLoaded()){booted=true;try{map.setConfigProperty('basemap','lightPreset','day')}catch(e){}addLayers();boot()}else setTimeout(tryBoot,400)};
+ let booted=false;const tryBoot=()=>{if(booted)return;if(map.isStyleLoaded()||(map.style&&map.style._loaded)){booted=true;try{map.setConfigProperty('basemap','lightPreset','day')}catch(e){}addLayers();boot()}else setTimeout(tryBoot,400)};
  map.on('style.load',tryBoot);tryBoot();
  map.on('click',e=>{if(picking<0)return;const names=['entry','mid','gate'];picked[names[picking]]=[+e.lngLat.lng.toFixed(6),+e.lngLat.lat.toFixed(6)];
   new mapboxgl.Marker({color:['#2a78d6','#eb6834','#1baf7a'][picking],scale:.7}).setLngLat(e.lngLat).addTo(map);picking++;
