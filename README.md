@@ -54,22 +54,22 @@ Mixed traffic uses SUMO's sublane model (lateral resolution 0.8 m), so motorcycl
 
 Total vehicular demand is identical in every scenario.
 
-## Results (provisional)
+## Results
 
-Baseline validation: 11 of 12 fifteen-minute gate counts (92%) have GEH < 5 (target ≥ 85%).
+Corridor: USM Avenue, 607 m (OpenStreetMap way 4302974), one-way, 2 lanes, 40 km/h. Results are produced automatically by the **Run SUMO simulation** GitHub Action whenever `config.json`, `field_data.json` or `run_bmp.py` changes.
+
+Baseline validation: 10 of 12 fifteen-minute gate counts (83%) have GEH < 5 (target ≥ 85%); the two misses are the morning intervals at 07:00 and 07:15, where the observed surge-and-drop is smoother in the model.
 
 | Scenario | Morning time loss (s/veh) | Change | Midday time loss (s/veh) | Change | Morning CO₂ change |
 |---|---|---|---|---|---|
-| S0 Existing conditions | 12.8 | — | 8.1 | — | — |
-| S1 Tricycle loading bay | 9.2 | -28% | 6.9 | -15% | -6% |
-| S2 No-parking enforcement | 7.3 | -43% | 5.7 | -29% | -12% |
-| S3 Controlled pedestrian crossing | 13.0 | +1% | 10.3 | +28% | +0% |
-| S4 Combined (S1+S2+S3) | 4.9 | -62% | 5.1 | -37% | -18% |
+| S0 Existing conditions | 9.8 | — | 6.8 | — | — |
+| S1 Tricycle loading bay | 8.0 | -18% | 6.2 | -10% | -4% |
+| S2 No-parking enforcement | 6.7 | -31% | 5.5 | -19% | -9% |
+| S3 Controlled pedestrian crossing | 10.0 | +2% | 7.4 | +9% | -1% |
+| S4 Combined (S1+S2+S3) | 4.7 | -52% | 4.9 | -28% | -14% |
 
 ![Observed vs simulated gate counts](results/fig_validation.png)
 ![Time loss by scenario](results/fig_time_loss.png)
-
-These results use the placeholder segment lengths in `config.json` (150 m and 250 m). They will be updated after the corridor is measured.
 
 ## Field data
 
