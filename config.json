@@ -1,17 +1,15 @@
 {
   "_README": "Edit the values marked MEASURE or ASSUME before running. All lengths in metres, times in seconds.",
-
   "geometry": {
-    "entry_segment_length_m": 150,
-    "mid_segment_length_m": 250,
-    "_MEASURE_lengths": "Measure in QGIS/Google Earth: entry point -> mid-segment observation point, and mid-segment point -> USM gate.",
+    "entry_segment_length_m": 228,
+    "mid_segment_length_m": 379,
+    "_MEASURE_lengths": "From OpenStreetMap way 4302974 (USM Avenue, 607 m from the Davao-Cotabato Road to the USM entrance). The split at the mid-segment observation point is approximate.",
     "lanes": 2,
     "lane_width_m": 3.0,
     "_MEASURE_lanes": "Paper describes a narrow two-lane one-way road. Confirm lane count and carriageway width on site.",
-    "speed_limit_kph": 30,
+    "speed_limit_kph": 40,
     "side_street_offset_m": 0
   },
-
   "friction": {
     "friction_zone_start_frac": 0.2,
     "friction_zone_end_frac": 0.8,
@@ -20,7 +18,6 @@
     "parked_event_duration_s": 60,
     "_ASSUME": "puv_stop_dwell_s and parked_event_duration_s were not measured; refine from video if available."
   },
-
   "pedestrians": {
     "group_size": 5,
     "crossing_block_s": 7,
@@ -28,26 +25,54 @@
     "controlled_cycle_s": 90,
     "controlled_ped_phase_s": 12
   },
-
   "tricycle_bay": {
     "position_frac": 0.45,
     "length_m": 30,
     "capacity": 8
   },
-
   "simulation": {
     "warmup_s": 900,
     "step_length_s": 0.5,
     "lateral_resolution_m": 0.8,
     "clearance_s": 900,
-    "seeds": [1, 2, 3, 4, 5]
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
   },
-
   "scenarios": {
-    "S0_baseline":        {"label": "Existing conditions",             "tricycle_bay": false, "no_parking": false, "controlled_crossing": false},
-    "S1_tricycle_bay":    {"label": "Tricycle loading bay",            "tricycle_bay": true,  "no_parking": false, "controlled_crossing": false},
-    "S2_no_parking":      {"label": "No-parking enforcement",          "tricycle_bay": false, "no_parking": true,  "controlled_crossing": false},
-    "S3_ctrl_crossing":   {"label": "Controlled pedestrian crossing",  "tricycle_bay": false, "no_parking": false, "controlled_crossing": true},
-    "S4_combined":        {"label": "Combined (S1+S2+S3)",             "tricycle_bay": true,  "no_parking": true,  "controlled_crossing": true}
+    "S0_baseline": {
+      "label": "Existing conditions",
+      "tricycle_bay": false,
+      "no_parking": false,
+      "controlled_crossing": false
+    },
+    "S1_tricycle_bay": {
+      "label": "Tricycle loading bay",
+      "tricycle_bay": true,
+      "no_parking": false,
+      "controlled_crossing": false
+    },
+    "S2_no_parking": {
+      "label": "No-parking enforcement",
+      "tricycle_bay": false,
+      "no_parking": true,
+      "controlled_crossing": false
+    },
+    "S3_ctrl_crossing": {
+      "label": "Controlled pedestrian crossing",
+      "tricycle_bay": false,
+      "no_parking": false,
+      "controlled_crossing": true
+    },
+    "S4_combined": {
+      "label": "Combined (S1+S2+S3)",
+      "tricycle_bay": true,
+      "no_parking": true,
+      "controlled_crossing": true
+    }
   }
 }

@@ -239,13 +239,16 @@ function drawCorridor(c,fit){
  PT_NAMES.filter(k=>c[k]).forEach(k=>{const el=document.createElement('div');
   el.style.cssText=`width:16px;height:16px;border-radius:50%;background:${PT_COL[k]};border:2px solid #fff;box-shadow:0 0 0 1px #0006`;
   markers.push(new mapboxgl.Marker({element:el}).setLngLat(c[k]).setPopup(new mapboxgl.Popup({offset:10}).setText(PT_LABEL[k])).addTo(map))});
- const line=PT_NAMES.filter(k=>c[k]).map(k=>c[k]);
+ const line=c.path&&c.path.length>1?c.path:PT_NAMES.filter(k=>c[k]).map(k=>c[k]);
  const gj={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line.length>1?line:[]}};
  const src=map.getSource('corr');
- if(src)src.setData(gj);else{map.addSource('corr',{type:'geojson',data:gj});map.addLayer({id:'corr',type:'line',source:'corr',paint:{'line-color':'#ffd166','line-width':4,'line-opacity':.9}})}
+ if(src)src.setData(gj);else{map.addSource('corr',{type:'geojson',data:gj});
+  map.addLayer({id:'corr-glow',type:'line',source:'corr',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,10,18,80],'line-blur':['interpolate',['linear'],['zoom'],13,6,18,36],'line-opacity':.55}});
+  map.addLayer({id:'corr',type:'line',source:'corr',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,3,18,8]}})}
  const parts=[];
  if(c.entry&&c.mid)parts.push(`Entry → mid-segment: <b>${hav(c.entry,c.mid).toFixed(0)} m</b>`);
  if(c.mid&&c.gate)parts.push(`Mid-segment → USM gate: <b>${hav(c.mid,c.gate).toFixed(0)} m</b>`);
+ if(c.length_m)parts.push(`USM Avenue length along the road: <b>${c.length_m.toFixed(0)} m</b> (OpenStreetMap)`);
  if(c.entry&&c.mid&&c.gate)parts.push(`Total: <b>${(hav(c.entry,c.mid)+hav(c.mid,c.gate)).toFixed(0)} m</b> (straight lines between points)`);
  document.getElementById('mapOut').innerHTML=parts.join(' · ');
  if(fit&&line.length>1){const b=new mapboxgl.LngLatBounds();line.forEach(p=>b.extend(p));map.fitBounds(b,{padding:60,maxZoom:18})}}
@@ -253,7 +256,7 @@ function initMap(){
  const box=document.getElementById('map');
  if(!window.mapboxgl){box.innerHTML='<div class="note" style="padding:16px">The map could not load here. Open the GitHub Pages version of this dashboard.</div>';document.getElementById('setPts').disabled=true;return}
  mapboxgl.accessToken=MAPBOX_TOKEN;
- map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/satellite-streets-v12',center:[124.8239,7.1112],zoom:15});
+ map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/satellite-streets-v12',center:[124.8298,7.1092],zoom:16});
  map.addControl(new mapboxgl.NavigationControl(),'top-right');
  map.addControl(new mapboxgl.ScaleControl({unit:'metric'}));
  map.on('load',()=>{fetch('corridor.json').then(r=>r.ok?r.json():null).then(c=>{if(c&&c.entry){picked=c;drawCorridor(c,true);document.getElementById('mapSub').textContent='Observation points from corridor.json'}}).catch(()=>{})});

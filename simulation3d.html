@@ -67,20 +67,24 @@ const HEIGHT={car:1.5,motorcycle:1.3,tricycle:1.7,jeepney:2.6,truck:3.2};
 const $=id=>document.getElementById(id);
 let map,data={},cur=null,corr=null,geo=null,t=0,playing=false,last=null,picking=-1,picked={};
 
-// ---------------- geometry: corridor polyline in local metres
+// ---------------- geometry: corridor path in local metres
 const R_LAT=110540;
 function toLocal(ll,o){return[(ll[0]-o[0])*Math.cos(o[1]*Math.PI/180)*111320,(ll[1]-o[1])*R_LAT]}
 function toLL(p,o){return[o[0]+p[0]/(Math.cos(o[1]*Math.PI/180)*111320),o[1]+p[1]/R_LAT]}
 const sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],add=(a,b)=>[a[0]+b[0],a[1]+b[1]],mul=(a,k)=>[a[0]*k,a[1]*k];
 const len=a=>Math.hypot(a[0],a[1]),unit=a=>{const l=len(a)||1;return[a[0]/l,a[1]/l]},left=u=>[-u[1],u[0]];
-function buildGeo(c,g){const o=c.entry,A=[0,0],M=toLocal(c.mid,o),G=toLocal(c.gate,o);
- const u1=unit(sub(M,A)),u2=unit(sub(G,M));const X=add(G,mul(u2,g.exit||60));
- return{o,A,M,G,X,u1,u2,Le:g.Le,Lm:g.Lm,half:g.lanes*g.laneW/2,lenAM:len(sub(M,A)),lenMG:len(sub(G,M))}}
-function place(x,y){const q=geo;let P,u;
- if(x<=q.Le){P=add(q.A,mul(sub(q.M,q.A),x/q.Le));u=q.u1}
- else if(x<=q.Le+q.Lm){P=add(q.M,mul(sub(q.G,q.M),(x-q.Le)/q.Lm));u=q.u2}
- else{P=add(q.G,mul(q.u2,x-q.Le-q.Lm));u=q.u2}
- return{P:add(P,mul(left(u),y+q.half)),u}}
+function buildGeo(c,g){const o=c.entry,raw=c.path&&c.path.length>1?c.path:[c.entry,c.mid,c.gate];
+ const pts=raw.map(p=>toLocal(p,o)),cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+len(sub(pts[i],pts[i-1])));
+ const total=cum[cum.length-1];
+ // arc length of the mid-segment point (closest point on the path)
+ const m=toLocal(c.mid,o);let best=1e9,midS=total*g.Le/(g.Le+g.Lm);
+ for(let i=1;i<pts.length;i++){const a=pts[i-1],d=sub(pts[i],a),L2=d[0]*d[0]+d[1]*d[1]||1,f=Math.max(0,Math.min(1,((m[0]-a[0])*d[0]+(m[1]-a[1])*d[1])/L2)),q=add(a,mul(d,f)),e=len(sub(m,q));if(e<best){best=e;midS=cum[i-1]+f*len(d)}}
+ const uEnd=unit(sub(pts[pts.length-1],pts[pts.length-2]));
+ return{o,pts,cum,total,midS,Le:g.Le,Lm:g.Lm,exit:g.exit||60,half:g.lanes*g.laneW/2,G:pts[pts.length-1],u2:uEnd}}
+function atS(s){const q=geo;if(s>=q.total)return{P:add(q.G,mul(q.u2,s-q.total)),u:q.u2};if(s<=0){const u=unit(sub(q.pts[1],q.pts[0]));return{P:add(q.pts[0],mul(u,s)),u}}
+ let i=1;while(q.cum[i]<s)i++;const a=q.pts[i-1],b=q.pts[i],f=(s-q.cum[i-1])/(q.cum[i]-q.cum[i-1]||1);return{P:add(a,mul(sub(b,a),f)),u:unit(sub(b,a))}}
+function sOf(x){const q=geo;if(x<=q.Le)return x*q.midS/q.Le;if(x<=q.Le+q.Lm)return q.midS+(x-q.Le)*(q.total-q.midS)/q.Lm;return q.total+(x-q.Le-q.Lm)}
+function place(x,y){const r=atS(sOf(x));return{P:add(r.P,mul(left(r.u),y+geo.half)),u:r.u}}
 
 // ---------------- vehicle features for time t (seconds, fractional)
 function vehicleFeatures(tt){const feats=[];let n=0,sum=0,stop=0,out=0;const k=Math.floor(tt),f=tt-k,types=cur.types;
@@ -106,25 +110,30 @@ function crossingFeatures(red,tt){const q=geo,c=q.G,u=q.u2,n=left(u),w=q.half+1.
   f.push({type:'Feature',properties:{c:'#7a3fa0',h:1.65},geometry:{type:'Polygon',coordinates:[r]}})}}
  return f}
 
-function roadFeatures(){const q=geo,pts=[q.A,q.M,q.G,q.X];
- const line={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:pts.map(p=>toLL(p,q.o))}};
- const zone=[];for(let s=0.2;s<=0.8001;s+=0.05){const x=q.Le+q.Lm*s;zone.push(place(x,-q.half*2+0.5).P)}
- const zl={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:zone.map(p=>toLL(p,q.o))}};
- return{line,zl}}
+function roadFeatures(){const q=geo,n=40,line=[];for(let i=0;i<=n;i++)line.push(toLL(atS(q.total*i/n).P,q.o));
+ const zone=[];for(let k=0;k<=20;k++){const x=q.Le+q.Lm*(0.2+0.6*k/20);zone.push(toLL(place(x,-q.half*2+0.5).P,q.o))}
+ return{line:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line}},zl:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:zone}}}}
 
 // ---------------- map
-function addLayers(){if(!geo||!cur)return;
+let labels=[];
+function addLabels(){labels.forEach(m=>m.remove());labels=[];if(!geo)return;
+ const mk=(ll,html,cls)=>{const el=document.createElement('div');el.innerHTML=html;el.style.cssText='background:#14323f;color:#fff;font:600 12px Inter,sans-serif;padding:4px 8px;border-radius:6px;box-shadow:0 1px 6px #0006;white-space:nowrap;'+(cls||'');labels.push(new mapboxgl.Marker({element:el,anchor:'bottom',offset:[0,-6]}).setLngLat(ll).addTo(map))};
+ mk(toLL(atS(geo.total*0.55).P,geo.o),'USM Avenue · study corridor','background:#ffd400;color:#14323f;font-size:13px');
+ mk(toLL(geo.pts[0],geo.o),'Davao–Cotabato Road (entry)');mk(toLL(geo.G,geo.o),'USM gate')}
+function addLayers(){if(!geo)return;
  const r=roadFeatures();
- const srcs={road:{type:'FeatureCollection',features:[r.line]},zone:{type:'FeatureCollection',features:[r.zl]},veh:{type:'FeatureCollection',features:[]},xing:{type:'FeatureCollection',features:[]}};
+ const srcs={hl:{type:'FeatureCollection',features:[r.line]},road:{type:'FeatureCollection',features:[r.line]},zone:{type:'FeatureCollection',features:[r.zl]},veh:{type:'FeatureCollection',features:[]},xing:{type:'FeatureCollection',features:[]}};
  for(const [k,v] of Object.entries(srcs)){if(map.getSource(k))map.getSource(k).setData(v);else map.addSource(k,{type:'geojson',data:v})}
+ if(!map.getLayer('hl-glow'))map.addLayer({id:'hl-glow',type:'line',source:'hl',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,10,18,90],'line-blur':['interpolate',['linear'],['zoom'],13,6,18,40],'line-opacity':.55}});
+ if(!map.getLayer('hl-core'))map.addLayer({id:'hl-core',type:'line',source:'hl',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,3,18,8],'line-opacity':.95}});
  if(!map.getLayer('road'))map.addLayer({id:'road',type:'line',source:'road',paint:{'line-color':'#ffffff','line-width':['interpolate',['exponential',2],['zoom'],15,2,20,60],'line-opacity':.18}});
  if(!map.getLayer('zone'))map.addLayer({id:'zone',type:'line',source:'zone',paint:{'line-color':'#f2b36b','line-width':['interpolate',['exponential',2],['zoom'],15,1,20,14],'line-opacity':.55}});
  if(!map.getLayer('xing'))map.addLayer({id:'xing',type:'fill-extrusion',source:'xing',paint:{'fill-extrusion-color':['get','c'],'fill-extrusion-height':['get','h'],'fill-extrusion-opacity':.95}});
  if(!map.getLayer('veh'))map.addLayer({id:'veh',type:'fill-extrusion',source:'veh',paint:{'fill-extrusion-color':['get','c'],'fill-extrusion-height':['get','h'],'fill-extrusion-opacity':1}});
- render()}
+ addLabels();render()}
 
-function camera(){if(!geo)return;const q=geo,mid=toLL(add(q.M,mul(sub(q.G,q.M),0.5)),q.o);
- const br=Math.atan2(q.u2[0],q.u2[1])*180/Math.PI;map.easeTo({center:mid,zoom:18.2,pitch:62,bearing:br-35,duration:1200})}
+function camera(){if(!geo)return;const q=geo,mid=toLL(atS(q.total*0.6).P,q.o),d=sub(q.G,q.pts[0]);
+ const br=Math.atan2(d[0],d[1])*180/Math.PI;map.flyTo({center:mid,zoom:17.3,pitch:62,bearing:br-25,duration:2500})}
 
 function render(){if(!cur||!geo||!map.getSource('veh'))return;
  const s=vehicleFeatures(t),red=pedRed(t);
@@ -142,8 +151,9 @@ function showMsg(html){const m=$('msg');m.innerHTML=html;m.style.display=html?'b
 async function loadReplay(sid){if(data[sid])return data[sid];
  try{const r=await fetch(`replay/replay_${sid}_morning.json`);if(!r.ok)throw 0;data[sid]=await r.json();return data[sid]}catch(e){return null}}
 
+let cfgGeom=null;
 async function useScenario(sid){const d=await loadReplay(sid);
- if(!d){showMsg('<h3>No simulation output yet</h3>Run <code>RUN_REPLAY.bat</code> (or <code>python run_bmp.py --replay</code>) and add the <code>replay/</code> folder to the repository.');return}
+ if(!d){if(corr&&cfgGeom&&!geo){geo=buildGeo(corr,cfgGeom);addLayers();camera()}showMsg('<h3>No simulation output yet</h3>Run <code>RUN_REPLAY.bat</code> (or <code>python run_bmp.py --replay</code>) and add the <code>replay/</code> folder to the repository.');return}
  cur=d;{const [h,m]=d.window.split(':').map(Number),e=h*60+m+15;$('win').textContent=`${d.window}–${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`}
  if(corr&&!geo){geo=buildGeo(corr,d.geom);camera()}
  if(geo){showMsg('');addLayers()}}
@@ -152,7 +162,7 @@ function needCorridor(){showMsg('<h3>Corridor points needed</h3>Click <b>Set cor
 
 function initMap(){
  mapboxgl.accessToken=MAPBOX_TOKEN;
- map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/standard',center:[124.8239,7.1112],zoom:15.5,pitch:55,antialias:true});
+ map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/standard',center:[124.8298,7.1092],zoom:16,pitch:55,antialias:true});
  map.addControl(new mapboxgl.NavigationControl({visualizePitch:true}),'top-right');
  map.addControl(new mapboxgl.ScaleControl({unit:'metric'}),'bottom-right');
  map.on('style.load',()=>{try{map.setConfigProperty('basemap','lightPreset','day');map.setConfigProperty('basemap','show3dObjects',true)}catch(e){}addLayers()});
@@ -160,6 +170,7 @@ function initMap(){
   let c=null;try{const r=await fetch('corridor.json');if(r.ok)c=await r.json()}catch(e){}
   if(!c){try{c=JSON.parse(localStorage.getItem('bmp_corridor')||'null')}catch(e){}}
   if(c&&c.entry&&c.mid&&c.gate)corr=c;
+  try{const r=await fetch('config.json');if(r.ok){const g=(await r.json()).geometry;cfgGeom={Le:g.entry_segment_length_m,Lm:g.mid_segment_length_m,lanes:g.lanes,laneW:g.lane_width_m,exit:60}}}catch(e){}
   await useScenario($('scen').value);
   if(!corr)needCorridor();});
  map.on('click',e=>{if(picking<0)return;const names=['entry','mid','gate'];picked[names[picking]]=[+e.lngLat.lng.toFixed(6),+e.lngLat.lat.toFixed(6)];

@@ -1,0 +1,40 @@
+{
+ "name": "USM Avenue (University of Southern Mindanao Avenue)",
+ "source": "OpenStreetMap way 4302974 (one-way, 2 lanes, 40 km/h, concrete)",
+ "length_m": 606.7,
+ "entry": [
+  124.8289977,
+  7.1065193
+ ],
+ "mid": [
+  124.8295152,
+  7.1085044
+ ],
+ "gate": [
+  124.8303705,
+  7.1118027
+ ],
+ "path": [
+  [
+   124.8289977,
+   7.1065193
+  ],
+  [
+   124.8292778,
+   7.1075867
+  ],
+  [
+   124.8295007,
+   7.1084491
+  ],
+  [
+   124.829933,
+   7.1100943
+  ],
+  [
+   124.8303705,
+   7.1118027
+  ]
+ ],
+ "mid_note": "Mid-segment point placed at the same relative position used in the model (37.5% of length); move it to the actual observation point if known."
+}
