@@ -1,0 +1,42 @@
+{
+  "_source": "Manual counts, Bai Matabay Plang Avenue (Tables 1, 3, 4 of the paper). 15-minute intervals.",
+  "classes": ["car", "motorcycle", "tricycle", "jeepney", "truck"],
+  "periods": {
+    "morning": {
+      "label": "Morning peak (06:30-07:30)",
+      "intervals": ["06:30", "06:45", "07:00", "07:15"],
+      "entry_by_class": [[14, 80, 109, 2, 0], [19, 145, 138, 6, 0], [22, 115, 160, 4, 0], [25, 100, 166, 3, 0]],
+      "gate_total": [203, 347, 442, 298],
+      "peds_gate": [92, 132, 156, 169],
+      "tricycle_stops": [3, 18, 19, 27],
+      "puv_stops": [0, 1, 6, 1],
+      "parked_events": [1, 9, 20, 26],
+      "tricycle_dwell_s": [12, 15, 41, 37],
+      "flow_status": ["slow", "slow", "stop-and-go", "stop-and-go"]
+    },
+    "midday": {
+      "label": "Midday peak (11:15-12:15)",
+      "intervals": ["11:15", "11:30", "11:45", "12:00"],
+      "entry_by_class": [[9, 97, 144, 4, 0], [23, 71, 158, 1, 0], [37, 106, 172, 6, 1], [20, 97, 195, 5, 2]],
+      "gate_total": [263, 287, 302, 375],
+      "peds_gate": [80, 77, 113, 93],
+      "tricycle_stops": [6, 12, 9, 17],
+      "puv_stops": [2, 7, 5, 4],
+      "parked_events": [6, 12, 11, 17],
+      "tricycle_dwell_s": [13, 38, 18, 23],
+      "flow_status": ["slow", "stop-and-go", "slow", "stop-and-go"]
+    },
+    "evening": {
+      "label": "Evening peak (19:30-20:30)",
+      "intervals": ["19:30", "19:45", "20:00", "20:15"],
+      "entry_by_class": [[20, 85, 40, 8, 0], [12, 81, 32, 5, 0], [14, 80, 43, 0, 0], [10, 60, 39, 4, 0]],
+      "gate_total": [150, 175, 163, 118],
+      "peds_gate": [55, 42, 35, 42],
+      "tricycle_stops": [5, 8, 5, 4],
+      "puv_stops": [0, 1, 2, 1],
+      "parked_events": [2, 2, 5, 1],
+      "tricycle_dwell_s": [17, 6, 12, 7],
+      "flow_status": ["free", "free", "free", "free"]
+    }
+  }
+}

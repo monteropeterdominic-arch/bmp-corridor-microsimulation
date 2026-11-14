@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bai Matabay Plang Avenue Traffic Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--mute:#5d6678;--line:#e3e6ec;--accent:#1f6f8b;
+ --car:#4a7fc1;--moto:#e8962e;--tri:#2f9e5e;--jeep:#b8418f;--truck:#7d7d7d;--warn:#d9822b;--bad:#c4423c;--ok:#2f9e5e}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+header{background:#14323f;color:#fff;padding:22px 28px}
+header h1{margin:0 0 4px;font-size:20px;font-weight:700}header p{margin:0;opacity:.8;font-size:13px}
+main{max-width:1180px;margin:0 auto;padding:20px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit;color:var(--mute)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;padding:6px 12px;font:inherit;cursor:pointer;color:var(--mute)}
+.seg button.on{background:#e7f1f5;color:var(--accent);font-weight:600}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
+@media(max-width:860px){.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h3{margin:0 0 2px;font-size:14px}.card .sub{color:var(--mute);font-size:12px;margin-bottom:10px}
+.kpi .v{font-size:26px;font-weight:700}.kpi .l{color:var(--mute);font-size:12px}.kpi .s{font-size:12px;color:var(--mute);margin-top:4px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:600;font-size:12px}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.free{background:#e3f4ea;color:#1e7a45}.slow{background:#fdf0dc;color:#9a5a0f}.stop{background:#fbe3e1;color:#a2322c}
+svg text{font-family:Inter,sans-serif}
+.pt{cursor:pointer}.pt:hover circle{stroke-width:3}
+#ptinfo{min-height:90px}
+.drop{border:2px dashed #b9c3cf;border-radius:12px;padding:26px;text-align:center;color:var(--mute);background:#fbfcfd}
+.drop.hover{border-color:var(--accent);background:#eef6f9}
+.note{font-size:12px;color:var(--mute)}
+.hidden{display:none}
+canvas{max-height:280px}
+footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
+</style>
+</head>
+<body>
+<header>
+ <h1>Bai Matabay Plang Avenue: Corridor Traffic Dashboard</h1>
+ <p>USM frontage, Kabacan, Cotabato · Field observations (3 peaks × 4 fifteen-minute intervals) and SUMO microsimulation scenarios</p>
+</header>
+<main>
+ <div class="tabs" id="tabs">
+  <button data-t="field" class="on">Field observations</button>
+  <button data-t="friction">Friction &amp; flow status</button>
+  <button data-t="sim">SUMO scenarios</button>
+  <button data-t="about">About</button>
+ </div>
+
+ <div class="row"><div class="seg" id="periodSeg"></div><span class="note" id="periodNote"></span></div>
+
+ <!-- FIELD -->
+ <section id="t-field">
+  <div class="grid g4" id="kpis"></div>
+  <div class="grid g2" style="margin-top:14px">
+   <div class="card"><h3>Corridor layout</h3><div class="sub">Click an observation point to see its counts for the selected peak</div>
+    <svg viewBox="0 0 520 190" width="100%" id="corr">
+     <rect x="20" y="70" width="480" height="44" fill="#cfd5dc" rx="3"/>
+     <line x1="20" y1="92" x2="500" y2="92" stroke="#fff" stroke-dasharray="10 9" stroke-width="2"/>
+     <rect x="170" y="114" width="26" height="70" fill="#cfd5dc"/>
+     <rect x="215" y="92" width="190" height="22" fill="#f2b36b" opacity=".6"/>
+     <text x="310" y="132" text-anchor="middle" font-size="10" fill="#7a4a12">friction zone</text>
+     <g fill="#fff"><rect x="425" y="72" width="16" height="5"/><rect x="425" y="81" width="16" height="5"/><rect x="425" y="90" width="16" height="5"/><rect x="425" y="99" width="16" height="5"/><rect x="425" y="108" width="16" height="5"/></g>
+     <path d="M60 82 h40 m-6 -5 l6 5 l-6 5" stroke="#333" fill="none"/>
+     <path d="M250 82 h40 m-6 -5 l6 5 l-6 5" stroke="#333" fill="none"/>
+     <path d="M183 176 v-40 m-5 6 l5 -6 l5 6" stroke="#333" fill="none"/>
+     <text x="205" y="170" font-size="10" fill="#555">side street / roadside origins</text>
+     <g class="pt" data-p="entry"><circle cx="40" cy="92" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="40" y="96" text-anchor="middle" font-size="10" font-weight="700">E</text><text x="40" y="55" text-anchor="middle" font-size="11">Entry point</text></g>
+     <g class="pt" data-p="mid"><circle cx="183" cy="92" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="183" y="96" text-anchor="middle" font-size="10" font-weight="700">M</text><text x="183" y="55" text-anchor="middle" font-size="11">Mid-segment</text></g>
+     <g class="pt" data-p="gate"><circle cx="433" cy="92" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="433" y="96" text-anchor="middle" font-size="10" font-weight="700">G</text><text x="433" y="55" text-anchor="middle" font-size="11">USM gate</text></g>
+     <text x="20" y="20" font-size="10" fill="#777">Davao–Cotabato National Hwy →  one-way  → USM main gate (schematic, not to scale)</text>
+    </svg>
+    <div id="ptinfo" class="note"></div>
+   </div>
+   <div class="card"><h3>Entry vs. gate arrivals</h3><div class="sub">Vehicles per 15 min; gate counts exceed entry because vehicles join inside the corridor</div><canvas id="cFlow"></canvas></div>
+   <div class="card"><h3>Vehicle composition at entry</h3><div class="sub">Vehicles per 15 min by class</div><canvas id="cClass"></canvas></div>
+   <div class="card"><h3>Pedestrians near the USM gate</h3><div class="sub">Pedestrians per 15 min</div><canvas id="cPed"></canvas></div>
+  </div>
+ </section>
+
+ <!-- FRICTION -->
+ <section id="t-friction" class="hidden">
+  <div class="grid g2">
+   <div class="card"><h3>Friction events at the mid-segment</h3><div class="sub">Events per 15 min (bars) and mean tricycle dwell time (line)</div><canvas id="cFric"></canvas></div>
+   <div class="card"><h3>Interval table</h3><div class="sub">Observed flow status per interval</div><div id="fricTable"></div></div>
+   <div class="card" style="grid-column:1/-1"><h3>What goes with stop-and-go traffic?</h3>
+    <div class="sub">Spearman rank correlation between each indicator and flow status (0 free, 1 slow, 2 stop-and-go), all 12 intervals</div>
+    <canvas id="cCorr" style="max-height:230px"></canvas>
+    <p class="note">Every friction indicator is associated with flow status more strongly than entry volume is, which supports the friction-driven explanation. Correlation alone does not prove cause; the SUMO scenarios test it with demand held constant.</p>
+   </div>
+  </div>
+ </section>
+
+ <!-- SIM -->
+ <section id="t-sim" class="hidden">
+  <div class="card" id="dropCard">
+   <div class="drop" id="drop">
+    <b>Load SUMO results</b><br>Drop <code>results/results.json</code> (written by <code>run_bmp.py</code>) here, or
+    <label style="color:var(--accent);cursor:pointer;text-decoration:underline">choose the file<input type="file" id="file" accept=".json" hidden></label>.
+    <div class="note" style="margin-top:8px">No simulation results are loaded yet. This panel shows only what the model actually produced.</div>
+   </div>
+  </div>
+  <div id="simOut" class="hidden">
+   <div class="grid g4" id="simKpis" style="margin-top:14px"></div>
+   <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Mean time loss per vehicle</h3><div class="sub">Seconds, mean of seeds (selected peak)</div><canvas id="cLoss"></canvas></div>
+    <div class="card"><h3>CO₂ emitted during the peak hour</h3><div class="sub">kg, all vehicles (selected peak)</div><canvas id="cCo2"></canvas></div>
+    <div class="card"><h3>Scenario table</h3><div class="sub">Mean ± SD across seeds</div><div id="simTable"></div></div>
+    <div class="card"><h3>Baseline validation (GEH)</h3><div class="sub" id="gehSub"></div><div id="gehTable"></div></div>
+   </div>
+  </div>
+ </section>
+
+ <!-- ABOUT -->
+ <section id="t-about" class="hidden">
+  <div class="card">
+   <h3>About this dashboard</h3>
+   <p>Field data were collected by manual observation at three points along the one-way corridor from the Davao–Cotabato National Highway to the University of Southern Mindanao (USM) main gate: classified vehicle counts (entry), friction events and tricycle dwell times (mid-segment), and arrival and pedestrian counts (USM gate), for the morning (06:30–07:30), midday (11:15–12:15) and evening (19:30–20:30) peaks.</p>
+   <p>The SUMO model inserts the counted vehicles by class and interval, reproduces the observed tricycle stops, parking and side-street intrusions and pedestrian crossings, and compares five scenarios: S0 existing conditions, S1 tricycle loading bay, S2 no-parking enforcement, S3 controlled pedestrian crossing, and S4 all three combined.</p>
+   <p class="note">BSCE Highway &amp; Railway Engineering, Department of Civil Engineering, University of Southern Mindanao, Kabacan, Cotabato.</p>
+  </div>
+ </section>
+</main>
+<footer>Bai Matabay Plang Avenue corridor study · Field data: manual counts, USM BSCE · Simulation: Eclipse SUMO</footer>
+
+<script>
+const FIELD={
+ morning:{label:"Morning peak",time:"06:30–07:30",iv:["06:30","06:45","07:00","07:15"],
+  entry:[[14,80,109,2,0],[19,145,138,6,0],[22,115,160,4,0],[25,100,166,3,0]],gate:[203,347,442,298],peds:[92,132,156,169],
+  tstop:[3,18,19,27],puv:[0,1,6,1],parked:[1,9,20,26],dwell:[12,15,41,37],status:["slow","slow","stop-and-go","stop-and-go"],phf:[0.899,0.730]},
+ midday:{label:"Midday peak",time:"11:15–12:15",iv:["11:15","11:30","11:45","12:00"],
+  entry:[[9,97,144,4,0],[23,71,158,1,0],[37,106,172,6,1],[20,97,195,5,2]],gate:[263,287,302,375],peds:[80,77,113,93],
+  tstop:[6,12,9,17],puv:[2,7,5,4],parked:[6,12,11,17],dwell:[13,38,18,23],status:["slow","stop-and-go","slow","stop-and-go"],phf:[0.891,0.818]},
+ evening:{label:"Evening peak",time:"19:30–20:30",iv:["19:30","19:45","20:00","20:15"],
+  entry:[[20,85,40,8,0],[12,81,32,5,0],[14,80,43,0,0],[10,60,39,4,0]],gate:[150,175,163,118],peds:[55,42,35,42],
+  tstop:[5,8,5,4],puv:[0,1,2,1],parked:[2,2,5,1],dwell:[17,6,12,7],status:["free","free","free","free"],phf:[0.871,0.866]}};
+const CLS=["Car/SUV","Motorcycle","Tricycle","Jeepney/UV","Truck"];
+const CC=["--car","--moto","--tri","--jeep","--truck"].map(v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim());
+const CORR=[["Parking/side-street intrusions",0.85],["Mean tricycle dwell time",0.84],["Tricycle share of entry",0.83],["Pedestrians near USM gate",0.77],["Tricycle stoppages",0.74],["Entry volume",0.71]];
+let period="morning",tab="field",SIM=null,charts={};
+Chart.defaults.font.family="Inter, sans-serif";Chart.defaults.font.size=11;Chart.defaults.color="#5d6678";
+const sum=a=>a.reduce((x,y)=>x+y,0),fmt=n=>n.toLocaleString("en-US");
+const pill=s=>`<span class="pill ${s==='free'?'free':s==='slow'?'slow':'stop'}">${s}</span>`;
+function mk(id,cfg){charts[id]&&charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg)}
+const grid={grid:{color:"#eef0f3"}},nogrid={grid:{display:false}};
+
+function seg(){const s=document.getElementById("periodSeg");s.innerHTML=Object.entries(FIELD).map(([k,v])=>`<button data-p="${k}" class="${k===period?'on':''}">${v.label}</button>`).join("");
+ s.querySelectorAll("button").forEach(b=>b.onclick=()=>{period=b.dataset.p;render()});
+ document.getElementById("periodNote").textContent=FIELD[period].time}
+
+function renderField(){const f=FIELD[period],ent=f.entry.map(sum),E=sum(ent),G=sum(f.gate);
+ const tri=sum(f.entry.map(r=>r[2])),mc=sum(f.entry.map(r=>r[1]));
+ document.getElementById("kpis").innerHTML=[
+  ["Entering vehicles",fmt(E),"peak hour, entry point"],
+  ["Arriving at USM gate",fmt(G),`${G>=E?"+":""}${fmt(G-E)} vs entry (${(100*(G-E)/E).toFixed(0)}%)`],
+  ["Tricycles + motorcycles",Math.round(100*(tri+mc)/E)+"%",`tricycles alone ${Math.round(100*tri/E)}%`],
+  ["Peak hour factor",f.phf[1].toFixed(3),`arriving at gate · entry ${f.phf[0].toFixed(3)}`]]
+  .map(([l,v,s])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
+ mk("cFlow",{type:"line",data:{labels:f.iv,datasets:[{label:"Entry",data:ent,borderColor:"#1f6f8b",backgroundColor:"#1f6f8b",tension:.25},{label:"USM gate",data:f.gate,borderColor:"#c4423c",backgroundColor:"#c4423c",tension:.25}]},options:{scales:{y:{beginAtZero:true,...grid},x:nogrid}}});
+ mk("cClass",{type:"bar",data:{labels:f.iv,datasets:CLS.map((c,i)=>({label:c,data:f.entry.map(r=>r[i]),backgroundColor:CC[i]}))},options:{scales:{x:{stacked:true,...nogrid},y:{stacked:true,...grid}}}});
+ mk("cPed",{type:"bar",data:{labels:f.iv,datasets:[{label:"Pedestrians",data:f.peds,backgroundColor:"#7a3fa0"}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,...grid},x:nogrid}}});
+ pt(window._pt||"entry")}
+
+function pt(p){window._pt=p;const f=FIELD[period];let h="";
+ if(p==="entry")h=`<b>Entry point</b> · classified inflow: `+f.iv.map((t,i)=>`${t} <b>${sum(f.entry[i])}</b>`).join(" · ");
+ if(p==="mid")h=`<b>Mid-segment</b> · tricycle stops ${sum(f.tstop)}, jeep/SUV stops ${sum(f.puv)}, parking/intrusions ${sum(f.parked)}, mean dwell ${Math.round(sum(f.dwell)/4)} s<br>`+f.iv.map((t,i)=>`${t} ${pill(f.status[i])}`).join(" ");
+ if(p==="gate")h=`<b>USM gate</b> · arrivals: `+f.iv.map((t,i)=>`${t} <b>${f.gate[i]}</b>`).join(" · ")+`<br>pedestrians: `+f.iv.map((t,i)=>`${t} <b>${f.peds[i]}</b>`).join(" · ");
+ document.getElementById("ptinfo").innerHTML=h}
+document.querySelectorAll(".pt").forEach(g=>g.onclick=()=>pt(g.dataset.p));
+
+function renderFric(){const f=FIELD[period];
+ mk("cFric",{data:{labels:f.iv,datasets:[
+  {type:"bar",label:"Tricycle stops",data:f.tstop,backgroundColor:CC[2]},
+  {type:"bar",label:"Parking/intrusions",data:f.parked,backgroundColor:"#d9822b"},
+  {type:"bar",label:"Jeep/SUV stops",data:f.puv,backgroundColor:CC[3]},
+  {type:"line",label:"Mean dwell (s)",data:f.dwell,borderColor:"#14323f",backgroundColor:"#14323f",yAxisID:"y2",tension:.2}]},
+  options:{scales:{y:{beginAtZero:true,title:{display:true,text:"events / 15 min"},...grid},y2:{position:"right",beginAtZero:true,title:{display:true,text:"seconds"},grid:{display:false}},x:nogrid}}});
+ document.getElementById("fricTable").innerHTML=`<table><tr><th>Interval</th><th>Tricycle stops</th><th>Parking/intr.</th><th>Dwell (s)</th><th>Peds</th><th>Status</th></tr>`+
+  f.iv.map((t,i)=>`<tr><td>${t}</td><td>${f.tstop[i]}</td><td>${f.parked[i]}</td><td>${f.dwell[i]}</td><td>${f.peds[i]}</td><td>${pill(f.status[i])}</td></tr>`).join("")+`</table>`;
+ mk("cCorr",{type:"bar",data:{labels:CORR.map(c=>c[0]),datasets:[{data:CORR.map(c=>c[1]),backgroundColor:CORR.map(c=>c[0]==="Entry volume"?"#9aa3b2":"#1f6f8b")}]},
+  options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>"ρ = "+c.raw.toFixed(2)}}},scales:{x:{min:0,max:1,title:{display:true,text:"Spearman ρ"},...grid},y:nogrid}}})}
+
+function loadSim(obj){if(!obj||!obj.results||!obj.results.S0_baseline){alert0("This file does not look like results.json from run_bmp.py.");return}
+ SIM=obj;document.getElementById("simOut").classList.remove("hidden");document.getElementById("dropCard").querySelector(".note").textContent="Loaded. Drop another file to replace it.";renderSim()}
+function alert0(m){document.getElementById("dropCard").querySelector(".note").textContent=m}
+function renderSim(){if(!SIM)return;const ids=Object.keys(SIM.results),rs=ids.map(s=>SIM.results[s][period]).filter(Boolean);
+ if(!rs.length)return;const base=SIM.results.S0_baseline[period];const best=rs.slice(1).reduce((a,b)=>b.time_loss_s<a.time_loss_s?b:a,rs[1]||rs[0]);
+ const pct=(a,b)=>b?(100*(a-b)/b):0;
+ document.getElementById("simKpis").innerHTML=[
+  ["Baseline time loss",base.time_loss_s.toFixed(1)+" s","per vehicle, S0"],
+  ["Best scenario",best.label,`time loss ${pct(best.time_loss_s,base.time_loss_s).toFixed(0)}% vs S0`],
+  ["Mid-segment speed",(base.mid_speed_kph||0).toFixed(1)+" → "+(best.mid_speed_kph||0).toFixed(1),"km/h, S0 → best"],
+  ["CO₂ change",pct(best.co2_kg,base.co2_kg).toFixed(0)+"%",`best scenario vs S0`]]
+  .map(([l,v,s])=>`<div class="card kpi"><div class="l">${l}</div><div class="v" style="font-size:20px">${v}</div><div class="s">${s}</div></div>`).join("");
+ const lab=rs.map(r=>r.scenario.split("_")[0]);
+ mk("cLoss",{type:"bar",data:{labels:lab,datasets:[{data:rs.map(r=>r.time_loss_s),backgroundColor:rs.map((r,i)=>i?"#1f6f8b":"#9aa3b2")}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>rs[c[0].dataIndex].label}}},scales:{y:{beginAtZero:true,...grid},x:nogrid}}});
+ mk("cCo2",{type:"bar",data:{labels:lab,datasets:[{data:rs.map(r=>r.co2_kg),backgroundColor:rs.map((r,i)=>i?"#2f9e5e":"#9aa3b2")}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,...grid},x:nogrid}}});
+ const pm=(r,k,d=1)=>`${r[k].toFixed(d)} <span class="note">± ${(r[k+"_sd"]||0).toFixed(d)}</span>`;
+ document.getElementById("simTable").innerHTML=`<table><tr><th>Scenario</th><th>Travel time (s)</th><th>Time loss (s)</th><th>Max halted</th><th>CO₂ (kg)</th></tr>`+
+  rs.map(r=>`<tr><td>${r.label}</td><td>${pm(r,"travel_time_s")}</td><td>${pm(r,"time_loss_s")}</td><td>${pm(r,"max_halting",0)}</td><td>${pm(r,"co2_kg")}</td></tr>`).join("")+`</table>`;
+ const v=(SIM.validation&&SIM.validation.rows||[]).filter(x=>x.period===period);
+ document.getElementById("gehSub").textContent=SIM.validation?`${SIM.validation.pct_GEH_below_5}% of all 12 intervals have GEH < 5 (target ≥ 85%)`:"";
+ document.getElementById("gehTable").innerHTML=`<table><tr><th>Interval</th><th>Observed</th><th>Simulated</th><th>GEH</th></tr>`+
+  v.map(x=>`<tr><td>${x.interval}</td><td>${x.observed}</td><td>${x.simulated}</td><td><span class="pill ${x.GEH<5?'free':'stop'}">${x.GEH}</span></td></tr>`).join("")+`</table>`}
+
+const drop=document.getElementById("drop");
+function readFile(f){const r=new FileReader();r.onload=()=>{try{loadSim(JSON.parse(r.result))}catch(e){alert0("Could not read that file as JSON.")}};r.readAsText(f)}
+document.getElementById("file").onchange=e=>e.target.files[0]&&readFile(e.target.files[0]);
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("hover")}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("hover")}));
+drop.addEventListener("drop",e=>e.dataTransfer.files[0]&&readFile(e.dataTransfer.files[0]));
+
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+ ["field","friction","sim","about"].forEach(t=>document.getElementById("t-"+t).classList.toggle("hidden",t!==tab));render()});
+function render(){seg();if(tab==="field")renderField();if(tab==="friction")renderFric();if(tab==="sim")renderSim()}
+render();
+</script>
+</body>
+</html>

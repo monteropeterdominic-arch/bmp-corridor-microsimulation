@@ -1,0 +1,51 @@
+cff-version: 1.2.0
+message: "If you use this model or data, please cite it as below."
+title: "Bai Matabay Plang Avenue corridor microsimulation: field data, SUMO model and web dashboard"
+type: software
+repository-code: "https://github.com/monteropeterdominic-arch/bmp-corridor-microsimulation"
+license: MIT
+keywords:
+  - traffic congestion
+  - side friction
+  - mixed traffic
+  - tricycle
+  - SUMO
+  - microsimulation
+  - Philippines
+authors:
+  - given-names: Rachelle Anne
+    family-names: Barbecho
+    affiliation: University of Southern Mindanao
+  - given-names: Lesly A.
+    family-names: Bocado
+    affiliation: University of Southern Mindanao
+  - given-names: John Paul
+    family-names: Esparagoza
+    affiliation: University of Southern Mindanao
+  - given-names: Jeko Jann G.
+    family-names: Heyres
+    affiliation: University of Southern Mindanao
+  - given-names: Peter Dominic C.
+    family-names: Montero
+    affiliation: University of Southern Mindanao
+  - given-names: Carl Jay G.
+    family-names: Ostaga
+    affiliation: University of Southern Mindanao
+  - given-names: Jovan A.
+    family-names: Prudente
+    affiliation: University of Southern Mindanao
+  - given-names: Samrah
+    family-names: Angeles
+    affiliation: University of Southern Mindanao
+  - given-names: Alexa Mae
+    family-names: Serjas
+    affiliation: University of Southern Mindanao
+  - given-names: Keith
+    family-names: Ternura
+    affiliation: University of Southern Mindanao
+  - given-names: Khent Brylle L.
+    family-names: Yson
+    affiliation: University of Southern Mindanao
+  - given-names: Ebrahim A.
+    family-names: Omar
+    affiliation: University of Southern Mindanao
