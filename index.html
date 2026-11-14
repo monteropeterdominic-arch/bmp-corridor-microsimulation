@@ -259,7 +259,8 @@ function initMap(){
  map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/satellite-streets-v12',center:[124.8298,7.1092],zoom:16});
  map.addControl(new mapboxgl.NavigationControl(),'top-right');
  map.addControl(new mapboxgl.ScaleControl({unit:'metric'}));
- map.on('load',()=>{fetch('corridor.json').then(r=>r.ok?r.json():null).then(c=>{if(c&&c.entry){picked=c;drawCorridor(c,true);document.getElementById('mapSub').textContent='Observation points from corridor.json'}}).catch(()=>{})});
+ const bootMap=()=>{fetch('corridor.json').then(r=>r.ok?r.json():null).then(c=>{if(c&&c.entry){picked=c;drawCorridor(c,true);document.getElementById('mapSub').textContent='USM Avenue (study corridor) from corridor.json'}}).catch(()=>{})};
+ if(map.isStyleLoaded())bootMap();else map.once('style.load',bootMap);
  map.on('click',e=>{
   if(picking<0)return;
   picked[PT_NAMES[picking]]=[+e.lngLat.lng.toFixed(6),+e.lngLat.lat.toFixed(6)];
