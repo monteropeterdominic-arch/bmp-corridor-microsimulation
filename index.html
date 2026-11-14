@@ -66,21 +66,23 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
   </div>
   <div class="grid g2" style="margin-top:14px">
    <div class="card"><h3>Corridor layout</h3><div class="sub">Click an observation point to see its counts for the selected peak</div>
-    <svg viewBox="0 0 520 190" width="100%" id="corr">
-     <rect x="20" y="70" width="480" height="44" fill="#cfd5dc" rx="3"/>
-     <line x1="20" y1="92" x2="500" y2="92" stroke="#fff" stroke-dasharray="10 9" stroke-width="2"/>
-     <rect x="170" y="114" width="26" height="70" fill="#cfd5dc"/>
-     <rect x="215" y="92" width="190" height="22" fill="#f2b36b" opacity=".6"/>
-     <text x="310" y="132" text-anchor="middle" font-size="10" fill="#7a4a12">friction zone</text>
-     <g fill="#fff"><rect x="425" y="72" width="16" height="5"/><rect x="425" y="81" width="16" height="5"/><rect x="425" y="90" width="16" height="5"/><rect x="425" y="99" width="16" height="5"/><rect x="425" y="108" width="16" height="5"/></g>
-     <path d="M60 82 h40 m-6 -5 l6 5 l-6 5" stroke="#333" fill="none"/>
-     <path d="M250 82 h40 m-6 -5 l6 5 l-6 5" stroke="#333" fill="none"/>
-     <path d="M183 176 v-40 m-5 6 l5 -6 l5 6" stroke="#333" fill="none"/>
-     <text x="205" y="170" font-size="10" fill="#555">side street / roadside origins</text>
-     <g class="pt" data-p="entry"><circle cx="40" cy="92" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="40" y="96" text-anchor="middle" font-size="10" font-weight="700">E</text><text x="40" y="55" text-anchor="middle" font-size="11">Entry point</text></g>
-     <g class="pt" data-p="mid"><circle cx="183" cy="92" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="183" y="96" text-anchor="middle" font-size="10" font-weight="700">M</text><text x="183" y="55" text-anchor="middle" font-size="11">Mid-segment</text></g>
-     <g class="pt" data-p="gate"><circle cx="433" cy="92" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="433" y="96" text-anchor="middle" font-size="10" font-weight="700">G</text><text x="433" y="55" text-anchor="middle" font-size="11">USM gate</text></g>
-     <text x="20" y="20" font-size="10" fill="#777">Davao–Cotabato National Hwy →  one-way  → USM main gate (schematic, not to scale)</text>
+    <svg viewBox="0 0 520 205" width="100%" id="corr">
+     <text x="260" y="14" text-anchor="middle" font-size="10" fill="#777">West side ↑ (schematic, not to scale)</text>
+     <rect x="170" y="24" width="26" height="76" fill="#cfd5dc"/>
+     <path d="M183 34 v52 m-5 -6 l5 6 l5 -6" stroke="#333" fill="none"/>
+     <text x="204" y="44" font-size="10" fill="#7a4a12" font-weight="600">Matalam St. (side street, west)</text>
+     <text x="204" y="57" font-size="9.5" fill="#555">+ roadside origins</text>
+     <rect x="20" y="100" width="480" height="44" fill="#cfd5dc" rx="3"/>
+     <line x1="20" y1="122" x2="500" y2="122" stroke="#fff" stroke-dasharray="10 9" stroke-width="2"/>
+     <rect x="215" y="100" width="190" height="22" fill="#f2b36b" opacity=".75"/>
+     <text x="310" y="94" text-anchor="middle" font-size="10" fill="#7a4a12">friction zone (west curb lane)</text>
+     <g fill="#fff"><rect x="425" y="102" width="16" height="5"/><rect x="425" y="111" width="16" height="5"/><rect x="425" y="120" width="16" height="5"/><rect x="425" y="129" width="16" height="5"/><rect x="425" y="138" width="16" height="5"/></g>
+     <path d="M60 136 h40 m-6 -5 l6 5 l-6 5" stroke="#333" fill="none"/>
+     <path d="M250 136 h40 m-6 -5 l6 5 l-6 5" stroke="#333" fill="none"/>
+     <g class="pt" data-p="entry"><circle cx="40" cy="122" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="40" y="126" text-anchor="middle" font-size="10" font-weight="700">E</text><text x="40" y="164" text-anchor="middle" font-size="11">Entry point</text></g>
+     <g class="pt" data-p="mid"><circle cx="183" cy="122" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="183" y="126" text-anchor="middle" font-size="10" font-weight="700">M</text><text x="183" y="164" text-anchor="middle" font-size="11">Mid-segment</text></g>
+     <g class="pt" data-p="gate"><circle cx="433" cy="122" r="11" fill="#fff" stroke="#14323f" stroke-width="2"/><text x="433" y="126" text-anchor="middle" font-size="10" font-weight="700">G</text><text x="433" y="164" text-anchor="middle" font-size="11">USM gate</text></g>
+     <text x="260" y="195" text-anchor="middle" font-size="10" fill="#777">Davao–Cotabato National Hwy → one-way, 2 lanes, 607 m → USM main gate</text>
     </svg>
     <div id="ptinfo" class="note"></div>
    </div>
