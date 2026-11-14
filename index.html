@@ -7,8 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link href="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.js"></script>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--mute:#5d6678;--line:#e3e6ec;--accent:#1f6f8b;
  --car:#4a7fc1;--moto:#e8962e;--tri:#2f9e5e;--jeep:#b8418f;--truck:#7d7d7d;--warn:#d9822b;--bad:#c4423c;--ok:#2f9e5e}
@@ -46,7 +44,7 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
 <body>
 <header>
  <h1>Bai Matabay Plang Avenue: Corridor Traffic Dashboard</h1>
- <p>USM frontage, Kabacan, Cotabato · Field observations (3 peaks × 4 fifteen-minute intervals) and SUMO microsimulation scenarios · <a href="simulation3d.html" style="color:#9fd8ea;font-weight:600">Open 3D simulation →</a></p>
+ <p>USM frontage, Kabacan, Cotabato · Field observations (3 peaks × 4 fifteen-minute intervals) and SUMO microsimulation scenarios</p>
 </header>
 <main>
  <div class="tabs" id="tabs">
@@ -61,11 +59,10 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
  <!-- FIELD -->
  <section id="t-field">
   <div class="grid g4" id="kpis"></div>
-  <div class="card" style="margin-top:14px">
-   <div class="row" style="margin-bottom:6px"><div><h3>Corridor map</h3><div class="sub" id="mapSub">Satellite view of the study corridor</div></div>
-    <button id="setPts" style="border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit">Set observation points</button></div>
-   <div id="map" style="height:380px;border-radius:8px;background:#e9edf1"></div>
-   <div id="mapOut" class="note" style="margin-top:8px"></div>
+  <div class="card" style="margin-top:14px;padding:10px">
+   <div class="row" style="margin:0 4px 8px"><div><h3>3D SUMO simulation of USM Avenue</h3><div class="sub" style="margin:0">Simulated vehicles replayed on the real corridor (07:00–07:15). Drag to rotate, scroll to zoom.</div></div>
+    <a href="simulation3d.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;white-space:nowrap">Full screen ↗</a></div>
+   <iframe src="simulation3d.html?embed=1" title="3D SUMO simulation" style="width:100%;height:620px;border:0;border-radius:8px;display:block" allow="fullscreen"></iframe>
   </div>
   <div class="grid g2" style="margin-top:14px">
    <div class="card"><h3>Corridor layout</h3><div class="sub">Click an observation point to see its counts for the selected peak</div>
@@ -277,7 +274,6 @@ function initMap(){
  });
  document.getElementById('setPts').onclick=()=>{picking=0;picked={};drawCorridor({},false);map.getCanvas().style.cursor='crosshair';document.getElementById('mapSub').textContent='Click the Entry point on the map'};
 }
-initMap();
 // When served from GitHub Pages (or any web server) load the bundled results automatically.
 fetch('results/results.json').then(r=>r.ok?r.json():null).then(j=>{if(j){loadSim(j);alert0('Showing results/results.json from this repository. Drop another file to replace it.')}}).catch(()=>{});
 </script>

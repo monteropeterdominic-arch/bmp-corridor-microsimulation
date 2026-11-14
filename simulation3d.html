@@ -12,6 +12,7 @@ html,body{margin:0;height:100%;font-family:Inter,system-ui,sans-serif;font-size:
 #map{position:absolute;inset:0}
 .panel{position:absolute;background:rgba(255,255,255,.95);border-radius:12px;box-shadow:0 2px 12px #0003;padding:12px 14px}
 #ctl{top:12px;left:12px;width:300px}
+body.embed #ctl{width:250px;padding:10px 12px;font-size:12px}body.embed .note,body.embed #dash{display:none}body.embed .clock{font-size:18px}
 #ctl h1{font-size:15px;margin:0 0 2px}#ctl .sub{color:#5d6678;font-size:12px;margin-bottom:10px}
 .row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
 select,button{font:inherit;border:1px solid #d5dae1;background:#fff;border-radius:8px;padding:5px 9px;cursor:pointer}
@@ -53,13 +54,14 @@ a{color:#1f6f8b}
   <div class="stat"><b id="nout">0</b><span>reached USM gate</span></div>
  </div>
  <div class="leg" id="leg"></div>
- <div class="row" style="margin-top:10px"><button id="pick">Set corridor points</button><a href="index.html">Dashboard</a></div>
+ <div class="row" style="margin-top:10px"><button id="pick">Set corridor points</button><a id="dash" href="index.html">Dashboard</a></div>
  <div class="note">Vehicle trajectories are SUMO output (one seed) for the 07:00–07:15 interval, drawn along the measured corridor. Vehicle sizes are to scale; heights are indicative.</div>
 </div>
 
 <div class="panel" id="msg"></div>
 
 <script>
+if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embed');
 const MAPBOX_TOKEN='pk.eyJ1IjoicGV0ZXJkb21pbmljIiwiYSI6ImNtdnc3NThkOTA1b2Eyd3ExNW5mdG85ancifQ.wUKa4dvO6FLRadv2xAKeWQ';
 const COLORS={car:'#2a78d6',motorcycle:'#eb6834',tricycle:'#1baf7a',jeepney:'#eda100',truck:'#e87ba4'};
 const LABELS={car:'Car/SUV',motorcycle:'Motorcycle',tricycle:'Tricycle',jeepney:'Jeepney/UV',truck:'Truck'};
