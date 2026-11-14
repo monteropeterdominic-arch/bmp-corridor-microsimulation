@@ -35,9 +35,9 @@ To watch one case, run `python run_bmp.py --gui S0_baseline morning`. To generat
 |---|---|
 | Classified entry counts per 15 min | Vehicles inserted on the entry link by class and interval |
 | Gate count minus entry count | Additional inflow from the side street and roadside origins |
-| Tricycle stoppages and mean dwell time | Tricycles stopping on the right lane of the friction zone, dwell ~ Normal(mean, 0.3 × mean) |
+| Tricycle stoppages and mean dwell time | Tricycles stopping on the left (west) curb lane of the friction zone, dwell ~ Normal(mean, 0.3 × mean) |
 | Jeepney/SUV stops | 20-s on-lane stops (assumed) |
-| Parking and side-street intrusions | Roadside vehicles occupying the right lane for 60 s (assumed) before merging |
+| Parking and side-street intrusions | Roadside vehicles occupying the left (west) curb lane for 60 s (assumed) before merging |
 | Pedestrians near the USM gate | Groups of five pedestrians blocking traffic for 7 s each (assumed) |
 
 Mixed traffic uses SUMO's sublane model (lateral resolution 0.8 m), so motorcycles can filter past tricycles. Each run has a 15-minute warm-up before the 60-minute peak; results cover only vehicles departing during the peak hour. Durations not measured in the field are stated assumptions in `config.json`.

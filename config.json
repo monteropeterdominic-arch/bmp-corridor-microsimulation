@@ -16,7 +16,9 @@
     "dwell_cv": 0.3,
     "puv_stop_dwell_s": 20,
     "parked_event_duration_s": 60,
-    "_ASSUME": "puv_stop_dwell_s and parked_event_duration_s were not measured; refine from video if available."
+    "_ASSUME": "puv_stop_dwell_s and parked_event_duration_s were not measured; refine from video if available.",
+    "side": "left",
+    "_side_note": "Curb side for stops, parking, loading bay and side-street inflow. OpenStreetMap shows the side streets joining USM Avenue mostly on the west (left when travelling to the gate): unnamed (124 m), Matalam St (223 m), Guiang St (419 m); Sunrise St (402 m) joins on the east."
   },
   "pedestrians": {
     "group_size": 5,

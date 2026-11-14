@@ -36,7 +36,7 @@ VTYPES = {
                        maxSpeed="16.7", speedFactor="normc(1.0,0.1,0.7,1.3)", latAlignment="arbitrary",
                        lcSublane="2.0", minGapLat="0.3", color="0.95,0.60,0.10"),
     "tricycle": dict(vClass="motorcycle", length="3.0", width="1.5", minGap="1.0", accel="1.2", decel="3.5",
-                     maxSpeed="11.1", speedFactor="normc(0.85,0.1,0.6,1.1)", latAlignment="right",
+                     maxSpeed="11.1", speedFactor="normc(0.85,0.1,0.6,1.1)", latAlignment="arbitrary",
                      minGapLat="0.4", guiShape="motorcycle", color="0.20,0.70,0.40"),
     "jeepney": dict(vClass="bus", length="7.0", width="2.0", minGap="2.0", accel="1.0", decel="4.0",
                     maxSpeed="13.9", speedFactor="normc(0.85,0.1,0.6,1.1)", latAlignment="center",
@@ -82,7 +82,8 @@ def build_network(cfg, dry):
     lanes, w = int(g["lanes"]), float(g["lane_width_m"])
     sx = Le + float(g.get("side_street_offset_m", 0))
     nd = ET.Element("nodes")
-    for nid, x, y, typ in [("A", 0, 0, "priority"), ("M", sx, 0, "priority"), ("S", sx, -40, "priority"),
+    sy = 40 if cfg["friction"].get("side", "left") == "left" else -40   # +y = left of the direction of travel
+    for nid, x, y, typ in [("A", 0, 0, "priority"), ("M", sx, 0, "priority"), ("S", sx, sy, "priority"),
                            ("G", Le + Lm, 0, "traffic_light"), ("X", Le + Lm + 60, 0, "priority")]:
         ET.SubElement(nd, "node", id=nid, x=str(x), y=str(y), type=typ)
     ed = ET.Element("edges")
@@ -166,6 +167,9 @@ def build_case(cfg, field, scen_id, period_id, seed, nlinks):
     zs, ze = fr["friction_zone_start_frac"] * Lm, fr["friction_zone_end_frac"] * Lm
     warm = sim["warmup_s"]
     horizon = warm + 3600 + sim["clearance_s"]
+    # curb lane where stops, parking and the loading bay are: leftmost lane by default (side streets are on the west)
+    curb = int(g["lanes"]) - 1 if fr.get("side", "left") == "left" else 0
+    CURB = f"E_mid_{curb}"
 
     entry = [period["entry_by_class"][0]] + period["entry_by_class"]
     gate = [period["gate_total"][0]] + period["gate_total"]
@@ -204,12 +208,12 @@ def build_case(cfg, field, scen_id, period_id, seed, nlinks):
         for _ in range(int(parked[k])):
             pos = rng.uniform(zs, ze)
             e = veh(t0 + rng.uniform(0, 900), "car", "r_mid")
-            e.set("departLane", "0"); e.set("departSpeed", "0")
+            e.set("departLane", str(curb)); e.set("departSpeed", "0")
             if scen["no_parking"]:
                 e.set("departPos", f"{pos:.1f}")          # same trip, but no roadside dwell
             else:
                 e.set("departPos", f"{pos + 8:.1f}")
-                ET.SubElement(e, "stop", lane="E_mid_0", startPos=f"{pos:.1f}", endPos=f"{pos + 8:.1f}",
+                ET.SubElement(e, "stop", lane=CURB, startPos=f"{pos:.1f}", endPos=f"{pos + 8:.1f}",
                               duration=str(fr["parked_event_duration_s"]))
         # tricycle loading/unloading stops
         trikes = [e for e in main if e.get("type") == "tricycle"]
@@ -219,13 +223,13 @@ def build_case(cfg, field, scen_id, period_id, seed, nlinks):
                 ET.SubElement(e, "stop", parkingArea="trike_bay", duration=f"{d:.0f}")
             else:
                 pos = rng.uniform(zs, ze)
-                ET.SubElement(e, "stop", lane="E_mid_0", startPos=f"{pos:.1f}", endPos=f"{pos + 4:.1f}",
+                ET.SubElement(e, "stop", lane=CURB, startPos=f"{pos:.1f}", endPos=f"{pos + 4:.1f}",
                               duration=f"{d:.0f}")
         # jeepney / car (PUV) stops
         puvs = [e for e in main if e.get("type") in ("jeepney", "car") and len(e) == 0]
         for e in rng.sample(puvs, min(len(puvs), int(pstop[k]))):
             pos = rng.uniform(zs, ze)
-            ET.SubElement(e, "stop", lane="E_mid_0", startPos=f"{pos:.1f}", endPos=f"{pos + 8:.1f}",
+            ET.SubElement(e, "stop", lane=CURB, startPos=f"{pos:.1f}", endPos=f"{pos + 8:.1f}",
                           duration=str(fr["puv_stop_dwell_s"]))
 
     # ---- write routes
@@ -247,7 +251,7 @@ def build_case(cfg, field, scen_id, period_id, seed, nlinks):
         ET.SubElement(tl, "phase", duration=str(dur), state=st)
     bay = cfg["tricycle_bay"]
     bs = bay["position_frac"] * Lm
-    ET.SubElement(add, "parkingArea", id="trike_bay", lane="E_mid_0", startPos=f"{bs:.1f}",
+    ET.SubElement(add, "parkingArea", id="trike_bay", lane=CURB, startPos=f"{bs:.1f}",
                   endPos=f"{bs + bay['length_m']:.1f}", roadsideCapacity=str(bay["capacity"]), friendlyPos="true")
     for i in range(int(g["lanes"])):
         ET.SubElement(add, "inductionLoop", id=f"det_entry_{i}", lane=f"E_entry_{i}", pos="5",
