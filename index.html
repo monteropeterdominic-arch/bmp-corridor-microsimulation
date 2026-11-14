@@ -260,7 +260,8 @@ function initMap(){
  map.addControl(new mapboxgl.NavigationControl(),'top-right');
  map.addControl(new mapboxgl.ScaleControl({unit:'metric'}));
  const bootMap=()=>{fetch('corridor.json').then(r=>r.ok?r.json():null).then(c=>{if(c&&c.entry){picked=c;drawCorridor(c,true);document.getElementById('mapSub').textContent='USM Avenue (study corridor) from corridor.json'}}).catch(()=>{})};
- if(map.isStyleLoaded())bootMap();else map.once('style.load',bootMap);
+ let mapBooted=false;const tryBootMap=()=>{if(mapBooted)return;if(map.isStyleLoaded()){mapBooted=true;bootMap()}else setTimeout(tryBootMap,400)};
+ map.on('style.load',tryBootMap);tryBootMap();
  map.on('click',e=>{
   if(picking<0)return;
   picked[PT_NAMES[picking]]=[+e.lngLat.lng.toFixed(6),+e.lngLat.lat.toFixed(6)];
