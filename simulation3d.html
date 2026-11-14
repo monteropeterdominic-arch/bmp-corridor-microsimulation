@@ -46,6 +46,7 @@ details summary{cursor:pointer;color:#5d6678;font-size:12px;margin-top:8px}
  <h2>How to use the 3D simulation</h2>
  <ol>
   <li>The traffic starts playing by itself. Use <b>❚❚ Pause / ▶ Play</b> to stop and restart it, and <b>speed</b> to watch faster.</li>
+  <li>USM Avenue is one-way with <b>two lanes in the same direction</b> (dashed line), from the Davao–Cotabato Road to the USM gate.</li>
   <li>Switch <b>S0 Existing</b> ↔ <b>S4 Combined measures</b> to compare the queue at the USM gate.</li>
   <li>Use the <b>view buttons</b> (Overview, Street level, Top-down), or drag to rotate, right-drag to tilt and scroll to zoom.</li>
   <li>Drag the <b>time slider</b> to jump to any moment between 07:00 and 07:15.</li>
@@ -112,12 +113,14 @@ function sOf(x){const q=geo;if(x<=q.Le)return x*q.midS/q.Le;if(x<=q.Le+q.Lm)retu
 function place(x,y){const r=atS(sOf(x));return{P:add(r.P,mul(left(r.u),y+geo.half)),u:r.u}}
 
 // ---------------- vehicle features for time t (seconds, fractional)
-function vehicleFeatures(tt){const feats=[];let n=0,sum=0,stop=0,out=0;const k=Math.floor(tt),f=tt-k,types=cur.types;
+function vehicleFeatures(tt){const roadW=cur.geom.lanes*cur.geom.laneW;const feats=[];let n=0,sum=0,stop=0,out=0;const k=Math.floor(tt),f=tt-k,types=cur.types;
  for(const v of cur.veh){const [ti,start,xs,ys,vs]=v,i=k-start;if(i<0)continue;if(i>=xs.length){if(xs[xs.length-1]>cur.geom.Le+cur.geom.Lm)out++;continue}
-  const j=Math.min(i+1,xs.length-1),x=xs[i]+(xs[j]-xs[i])*f,y=ys[i]+(ys[j]-ys[i])*f,sp=vs[i];
+  if(ys[i]<-roadW-0.8)continue;                       // still on the schematic side street: not on USM Avenue yet
+  const j=Math.min(i+1,xs.length-1),x=xs[i]+(xs[j]-xs[i])*f,y=Math.max(-roadW+0.6,Math.min(-0.6,ys[i]+(ys[j]-ys[i])*f)),sp=vs[i];
   const a=place(x,y);let h;
   const jn=Math.min(i+1,xs.length-1),jp=Math.max(i-1,0);
-  const p2=place(xs[jn],ys[jn]).P,p1=place(xs[jp],ys[jp]).P,dv=sub(p2,p1);
+  const cl=v=>Math.max(-roadW+0.6,Math.min(-0.6,v));
+  const p2=place(xs[jn],cl(ys[jn])).P,p1=place(xs[jp],cl(ys[jp])).P,dv=sub(p2,p1);
   h=len(dv)>0.2?unit(dv):a.u; v.h=len(dv)>0.2?h:(v.h||a.u); h=v.h;
   const type=types[ti],dim=cur.vtype_dims[type],L=dim[0],W=dim[1],n2=left(h);
   const back=sub(a.P,mul(h,L)),hw=W/2;
@@ -135,9 +138,13 @@ function crossingFeatures(red,tt){const q=geo,c=q.G,u=q.u2,n=left(u),w=q.half+1.
   f.push({type:'Feature',properties:{c:'#7a3fa0',h:1.65},geometry:{type:'Polygon',coordinates:[r]}})}}
  return f}
 
-function roadFeatures(){const q=geo,n=40,line=[];for(let i=0;i<=n;i++)line.push(toLL(atS(q.total*i/n).P,q.o));
+function roadFeatures(){const q=geo,n=60,line=[];for(let i=0;i<=n;i++)line.push(toLL(atS(q.total*i/n).P,q.o));
+ const W=q.half*2,L=q.Le+q.Lm+q.exit,lft=[],rgt=[],lane=[];
+ for(let i=0;i<=n;i++){const x=L*i/n;lft.push(toLL(place(x,0).P,q.o));rgt.push(toLL(place(x,-W).P,q.o));lane.push(toLL(place(x,-W/2).P,q.o))}
+ const surf={type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[[...lft,...rgt.reverse(),lft[0]]]}};
+ const laneF={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:lane}};
  const zone=[];for(let k=0;k<=20;k++){const x=q.Le+q.Lm*(0.2+0.6*k/20);zone.push(toLL(place(x,-q.half*2+0.5).P,q.o))}
- return{line:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line}},zl:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:zone}}}}
+ return{surf,laneF,line:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:line}},zl:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:zone}}}}
 
 // ---------------- map
 let labels=[];
@@ -147,10 +154,12 @@ function addLabels(){labels.forEach(m=>m.remove());labels=[];if(!geo)return;
  mk(toLL(geo.pts[0],geo.o),'Davao–Cotabato Road (entry)');mk(toLL(geo.G,geo.o),'USM gate')}
 function addLayers(){if(!geo)return;
  const r=roadFeatures();
- const srcs={hl:{type:'FeatureCollection',features:[r.line]},road:{type:'FeatureCollection',features:[r.line]},zone:{type:'FeatureCollection',features:[r.zl]},veh:{type:'FeatureCollection',features:[]},xing:{type:'FeatureCollection',features:[]}};
+ const srcs={surf:{type:'FeatureCollection',features:[r.surf]},lane:{type:'FeatureCollection',features:[r.laneF]},hl:{type:'FeatureCollection',features:[r.line]},road:{type:'FeatureCollection',features:[r.line]},zone:{type:'FeatureCollection',features:[r.zl]},veh:{type:'FeatureCollection',features:[]},xing:{type:'FeatureCollection',features:[]}};
  for(const [k,v] of Object.entries(srcs)){if(map.getSource(k))map.getSource(k).setData(v);else map.addSource(k,{type:'geojson',data:v})}
  if(!map.getLayer('hl-glow'))map.addLayer({id:'hl-glow',type:'line',source:'hl',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,10,18,90],'line-blur':['interpolate',['linear'],['zoom'],13,6,18,40],'line-opacity':.55}});
- if(!map.getLayer('hl-core'))map.addLayer({id:'hl-core',type:'line',source:'hl',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,3,18,8],'line-opacity':.95}});
+ if(!map.getLayer('hl-core'))map.addLayer({id:'hl-core',type:'line',source:'hl',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffd400','line-width':['interpolate',['exponential',2],['zoom'],13,3,16,6,17,0],'line-opacity':.95}});
+ if(!map.getLayer('surf'))map.addLayer({id:'surf',type:'fill',source:'surf',paint:{'fill-color':'#5d6470','fill-opacity':.85}});
+ if(!map.getLayer('lane'))map.addLayer({id:'lane',type:'line',source:'lane',paint:{'line-color':'#ffffff','line-width':['interpolate',['exponential',2],['zoom'],15,0.5,20,3],'line-dasharray':[3,3]}});
  if(!map.getLayer('road'))map.addLayer({id:'road',type:'line',source:'road',paint:{'line-color':'#ffffff','line-width':['interpolate',['exponential',2],['zoom'],15,2,20,60],'line-opacity':.18}});
  if(!map.getLayer('zone'))map.addLayer({id:'zone',type:'line',source:'zone',paint:{'line-color':'#f2b36b','line-width':['interpolate',['exponential',2],['zoom'],15,1,20,14],'line-opacity':.55}});
  if(!map.getLayer('xing'))map.addLayer({id:'xing',type:'fill-extrusion',source:'xing',paint:{'fill-extrusion-color':['get','c'],'fill-extrusion-height':['get','h'],'fill-extrusion-opacity':.95}});
